@@ -2,11 +2,11 @@
 
 Kotlin集合操作的仓颉移植
 
-使用方法: 在```[dependencies]``` 段内通过 gitcode 引用
+使用方法: 在```[dependencies]``` 段内通过 github url 直接引用
 
 ```toml
 [dependencies]
-kcj = { git = "https://github.com/rarnu/kcj.git" }
+kcj = { git = "https://github.com/rarnu/kcj" }
 
 ```
 
