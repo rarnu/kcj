@@ -1,0 +1,13 @@
+[dependencies]
+
+[package]
+  cjc-version = "0.51.4"
+  compile-option = ""
+  description = "Kotlin集合操作的仓颉移植"
+  link-option = ""
+  name = "kcj"
+  output-type = "static"
+  src-dir = ""
+  target-dir = ""
+  version = "0.1.0"
+  [package.package-configuration]
