@@ -1,7 +1,7 @@
-package extension
+package common
 
 from std import collection.*
-from kcj import common.*
+from std import fs.*
 
 public func run<R>(block: () -> R): R {
     return block()

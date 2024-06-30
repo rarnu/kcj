@@ -1,6 +1,7 @@
 package extension
 
 from std import convert.Parsable
+from std import time.*
 
 public interface KtString {
 
@@ -30,6 +31,7 @@ public interface KtString {
     func toBool(): ?Bool
     func toInt(): ?Int
     func toFloat(): ?Float64
+    func toDateTime(): ?DateTime
     func take(n: Int): String 
     func takeLast(n: Int): String
     func drop(n: Int): String
@@ -235,4 +237,16 @@ extend String <: KtString {
         }
         return take((this.size - n).coerceAtLeast(0))
     }
+
+    public func toDateTime(): ?DateTime {
+        const FORMAT_DATETIME = "yyyy-MM-dd HH:mm:ss"
+        let tmp = this.replace("T", " ").replace("Z", "")
+        return try {
+            DateTime.parse(tmp, FORMAT_DATETIME)    
+        } catch(e: Exception) {
+            println(e)
+            None
+        }
+    }
 }
+
