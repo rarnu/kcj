@@ -36,6 +36,8 @@ public interface KtString {
     func takeLast(n: Int): String
     func drop(n: Int): String
     func dropLast(n: Int): String 
+    func format(args: Array<ToString>): String
+    func format(args: Map<String, ToString>): String
 }
 
 
@@ -248,5 +250,14 @@ extend String <: KtString {
             None
         }
     }
+
+    public func format(args: Array<ToString>): String {
+        return Formatter.format(this, args)
+    }
+
+    public func format(args: Map<String, ToString>): String {
+        return Formatter.format(this, args)
+    }
+
 }
 

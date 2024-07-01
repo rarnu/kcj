@@ -4,28 +4,15 @@ from std import console.*
 from std import collection.*
 from kcj import extension.*
 from kcj import common.*
+from std import regex.*
 
 main(): Int64 {
 
 
-    // let l1 = [1, 2, 3, 4]
-    // let l2 = [5 ,6, 7, 8]
-    // println(l1 + l2)
+    println("Hello {}, I'm using {}".format("world", "cangjie"))
 
-    // let l3 = ["a", "b", "c", "d"]
-    // let l4 = ["h", "i", "j", "k"]
-    // println(l3 + l4)
-
-
-    // let m = HashMap(("a", 1), ("b", 2), ("c", 3))
-
-    // let n = HashMap(("b", 10), ("c", 20), ("d", 30))
-
-    // println(m + n)
-    // println(m - n)
-
-    // let a = ""
-    // a.toBool()
+    println("Hello {1}, I'm using {2}".format(hashMapOf<String, ToString>(("1", "world"), ("2", "cangjie"))))
 
     return 0
 }
+

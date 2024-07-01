@@ -2,6 +2,7 @@ package common
 
 from std import collection.*
 from std import fs.*
+from std import collection.concurrent.*
 
 public func run<R>(block: () -> R): R {
     return block()
@@ -27,4 +28,28 @@ public func mapToList<K, V>(map: Map<K, V>): ArrayList<Pair<K, V>> where K <: Ha
         l.append(Pair(k, v))
     }
     return l
+}
+
+public func arrayOf<T>(arr: Array<T>): Array<T> {
+    return arr.clone()
+}
+
+public func arrayListOf<T>(arr: Array<T>): ArrayList<T> {
+    return ArrayList(arr)
+}
+
+public func hashSetOf<T>(arr: Array<T>): HashSet<T> where T <: Hashable & Equatable<T> {
+    return HashSet(arr)
+}
+
+public func linkedListOf<T>(arr: Array<T>): LinkedList<T> {
+    return LinkedList(arr)
+}
+
+public func hashMapOf<K, V>(tu: Array<(K, V)>): HashMap<K, V> where K <: Hashable & Equatable<K> {
+    return HashMap(tu)
+}
+
+public func concurrentHashMapOf<K, V>(tu: Array<(K, V)>): ConcurrentHashMap<K, V> where K <: Hashable & Equatable<K> {
+    return ConcurrentHashMap(tu)
 }
