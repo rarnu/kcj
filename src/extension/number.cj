@@ -32,6 +32,7 @@ public interface KtChar {
     func coerceAtLeast(minimumValue: Char): Char
     func upper(): Char
     func lower(): Char
+    func isWhitespace(): Bool
 }
 
 extend Int <: KtInt {
@@ -146,5 +147,9 @@ extend Char <: KtChar {
 
     public func lower(): Char {
         return Char(this.toString().toAsciiLower()[0])
+    }
+
+    public func isWhitespace(): Bool {
+        return (this == ' ' || this == '\n' || this == '\t' || this == '\r' || this == '\b' || this == '\f')
     }
 }

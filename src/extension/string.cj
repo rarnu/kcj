@@ -2,6 +2,8 @@ package extension
 
 from std import convert.Parsable
 from std import time.*
+from std import regex.*
+
 
 public interface KtString {
 
@@ -38,6 +40,11 @@ public interface KtString {
     func dropLast(n: Int): String 
     func format(args: Array<ToString>): String
     func format(args: Map<String, ToString>): String
+    func trimMargin(marginPrefix!: String): String
+    func trimIndent(): String
+    func toRegex(): Regex
+    func indexOfFirst(predicate: (Char) -> Bool): Int
+    func indexOfLast(predicate: (Char) -> Bool): Int
 }
 
 
@@ -197,7 +204,7 @@ extend String <: KtString {
     }
 
     public func lines(): Array<String> {
-        return this.split("\n", removeEmpty: true)
+        return this.split("\n", removeEmpty: false)
     }
 
     public func toBool(): ?Bool {
@@ -259,5 +266,34 @@ extend String <: KtString {
         return Formatter.format(this, args)
     }
 
+    public func indexOfFirst(predicate: (Char) -> Bool): Int {
+        for (i in 0..this.size) {
+            if (predicate(Char(this[i]))) {
+                return i
+            }
+        }
+        return -1
+    }
+
+    public func indexOfLast(predicate: (Char) -> Bool): Int {
+        for (i in (this.size - 1)..=0) {
+            if (predicate(Char(this[i]))) {
+                return i
+            }
+        }
+        return -1
+    }
+
+    public func trimMargin(marginPrefix!: String = "|"): String {
+        return stringTrimMargin(this, marginPrefix: marginPrefix)
+    }
+
+    public func trimIndent(): String {
+        return stringTrimIndent(this)
+    }
+
+    public func toRegex(): Regex {
+        return Regex(this)
+    }
 }
 
