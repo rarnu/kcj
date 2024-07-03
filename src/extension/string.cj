@@ -45,6 +45,7 @@ public interface KtString {
     func toRegex(): Regex
     func indexOfFirst(predicate: (Char) -> Bool): Int
     func indexOfLast(predicate: (Char) -> Bool): Int
+    func replaceTag(tag: String, replacement: () -> String): String
 }
 
 
@@ -294,6 +295,10 @@ extend String <: KtString {
 
     public func toRegex(): Regex {
         return Regex(this)
+    }
+
+    public func replaceTag(tag: String, replacement: () -> String): String {
+        return this.replace(tag, replacement())
     }
 }
 
