@@ -1,8 +1,9 @@
-package extension
+package kcj.extension
 
-from std import convert.Parsable
-from std import time.*
-from std import regex.*
+import std.convert.Parsable
+import std.time.*
+import std.regex.*
+import std.collection.*
 
 
 public interface KtString {
@@ -29,7 +30,6 @@ public interface KtString {
     func replaceBeforeLast(delimiter: String, replacement: String, missingDelimiterValue!: String): String
     func indexOfAny(strs: Collection<String>, startIndex!: Int): Int
     func lastIndexOfAny(strs: Array<String>, startIndex!: Int): Int
-    func lines(): Array<String>
     func toBool(): ?Bool
     func toInt(): ?Int
     func toFloat(): ?Float64
@@ -43,8 +43,8 @@ public interface KtString {
     func trimMargin(marginPrefix!: String): String
     func trimIndent(): String
     func toRegex(): Regex
-    func indexOfFirst(predicate: (Char) -> Bool): Int
-    func indexOfLast(predicate: (Char) -> Bool): Int
+    func indexOfFirst(predicate: (Rune) -> Bool): Int
+    func indexOfLast(predicate: (Rune) -> Bool): Int
     func replaceTag(tag: String, replacement: () -> String): String
 }
 
@@ -91,7 +91,7 @@ extend String <: KtString {
         }
         var str = ""
         for (i in startIndex..endIndex) {
-            str += "${Char(this[i])}"
+            str += "${Rune(this[i])}"
         }
         return str
     }
@@ -105,7 +105,7 @@ extend String <: KtString {
         }
         var str = ""
         for (i in startIndex..this.size) {
-            str += "${Char(this[i])}"
+            str += "${Rune(this[i])}"
         }
         return str
     }
@@ -204,10 +204,6 @@ extend String <: KtString {
         return index
     }
 
-    public func lines(): Array<String> {
-        return this.split("\n", removeEmpty: false)
-    }
-
     public func toBool(): ?Bool {
         return Bool.tryParse(this)
     }
@@ -267,18 +263,18 @@ extend String <: KtString {
         return Formatter.format(this, args)
     }
 
-    public func indexOfFirst(predicate: (Char) -> Bool): Int {
+    public func indexOfFirst(predicate: (Rune) -> Bool): Int {
         for (i in 0..this.size) {
-            if (predicate(Char(this[i]))) {
+            if (predicate(Rune(this[i]))) {
                 return i
             }
         }
         return -1
     }
 
-    public func indexOfLast(predicate: (Char) -> Bool): Int {
+    public func indexOfLast(predicate: (Rune) -> Bool): Int {
         for (i in (this.size - 1)..=0) {
-            if (predicate(Char(this[i]))) {
+            if (predicate(Rune(this[i]))) {
                 return i
             }
         }

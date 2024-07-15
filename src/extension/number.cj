@@ -1,6 +1,7 @@
-package extension
+package kcj.extension
 
-from std import convert.Parsable
+import std.convert.Parsable
+import std.time.*
 
 public interface KtInt {
     func coerceAtMost(maximumValue: Int): Int
@@ -12,7 +13,7 @@ public interface KtInt {
     func toBool(): Bool
     func toDateTimeMs(): DateTime
     func toDateTime(): DateTime
-    func toChar(): Char
+    func toChar(): Rune
 }
 
 public interface KtFloat {
@@ -26,12 +27,12 @@ public interface KtBool {
     func toInt(): Int
 }
 
-public interface KtChar {
+public interface KtRune {
     prop code: Int
-    func coerceAtMost(maximumValue: Char): Char
-    func coerceAtLeast(minimumValue: Char): Char
-    func upper(): Char
-    func lower(): Char
+    func coerceAtMost(maximumValue: Rune): Rune
+    func coerceAtLeast(minimumValue: Rune): Rune
+    func upper(): Rune
+    func lower(): Rune
     func isWhitespace(): Bool
 }
 
@@ -85,8 +86,8 @@ extend Int <: KtInt {
         return DateTime.fromUnixTimeStamp(this * Duration.second).inTimeZone(TimeZone.Local)
     }
 
-    public func toChar(): Char {
-        return Char(this)
+    public func toChar(): Rune {
+        return Rune(this)
     }
 
 }
@@ -125,7 +126,7 @@ extend Bool <: KtBool {
     }
 }
 
-extend Char <: KtChar {
+extend Rune <: KtRune {
 
     public prop code: Int {
         get() {
@@ -133,23 +134,23 @@ extend Char <: KtChar {
         }
     }
 
-    public func coerceAtMost(maximumValue: Char): Char {
+    public func coerceAtMost(maximumValue: Rune): Rune {
         return if (this > maximumValue) { maximumValue } else { this }
     }
 
-    public func coerceAtLeast(minimumValue: Char): Char {
+    public func coerceAtLeast(minimumValue: Rune): Rune {
         return if (this < minimumValue) { minimumValue } else { this }
     }
 
-    public func upper(): Char {
-        return Char(this.toString().toAsciiUpper()[0])
+    public func upper(): Rune {
+        return Rune(this.toString().toAsciiUpper()[0])
     }
 
-    public func lower(): Char {
-        return Char(this.toString().toAsciiLower()[0])
+    public func lower(): Rune {
+        return Rune(this.toString().toAsciiLower()[0])
     }
 
     public func isWhitespace(): Bool {
-        return (this == ' ' || this == '\n' || this == '\t' || this == '\r' || this == '\b' || this == '\f')
+        return (this == r' ' || this == r'\n' || this == r'\t' || this == r'\r' || this == r'\b' || this == r'\f')
     }
 }

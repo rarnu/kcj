@@ -1,9 +1,9 @@
-package extension
+package kcj.extension
 
-from std import collection.*
-from std import collection.concurrent.*
-from std import math.min
-from kcj import common.*
+import std.collection.*
+import std.collection.concurrent.*
+import std.math.min
+import kcj.common.*
 
 public interface KtCollection<T> where T <: Hashable & Equatable<T> {
 
@@ -20,8 +20,6 @@ public interface KtCollection<T> where T <: Hashable & Equatable<T> {
     func firstOrDefault(def: () -> T): T
     func lastOrDefault(def: () -> T): T
     func getOrDefault(index: Int, def: () -> T): T
-    func indexOf(item: T): Int
-    func lastIndexOf(item: T): Int
     func indexOfFirst(predicate: (T) -> Bool): Int
     func indexOfLast(predicate: (T) -> Bool): Int
     func all(predicate: (T) -> Bool): Bool
@@ -48,7 +46,7 @@ public interface KtMap<K, V> where K <: Hashable & Equatable<K> {
     
 }
 
-extend Array<T> <: KtCollection<T> where T <: Hashable & Equatable<T> {
+extend<T> Array<T> <: KtCollection<T> where T <: Hashable & Equatable<T> {
 
     // 操作符
     public operator func +(right: Collection<T>): Array<T> {
@@ -117,14 +115,6 @@ extend Array<T> <: KtCollection<T> where T <: Hashable & Equatable<T> {
 
     public func getOrDefault(index: Int, def: () -> T): T {
         return this.get(index) ?? def()
-    }
-
-    public func indexOf(item: T): Int {
-        return indexOf(this, item)
-    }
-
-    public func lastIndexOf(item: T): Int {
-        return lastIndexOf(this, item)
     }
 
     public func indexOfFirst(predicate: (T) -> Bool): Int {
@@ -394,7 +384,7 @@ extend Array<T> <: KtCollection<T> where T <: Hashable & Equatable<T> {
     }
 }
 
-extend ArrayList<T> <: KtCollection<T> where T <: Hashable & Equatable<T> {
+extend<T> ArrayList<T> <: KtCollection<T> where T <: Hashable & Equatable<T> {
 
     // 操作符
     public operator func +(right: Collection<T>): ArrayList<T> {
@@ -741,7 +731,7 @@ extend ArrayList<T> <: KtCollection<T> where T <: Hashable & Equatable<T> {
 
 }
 
-extend LinkedList<T> <: KtCollection<T> where T <: Hashable & Equatable<T> {
+extend<T> LinkedList<T> <: KtCollection<T> where T <: Hashable & Equatable<T> {
 
     // 操作符
     public operator func +(right: Collection<T>): LinkedList<T> {
@@ -1105,7 +1095,7 @@ extend LinkedList<T> <: KtCollection<T> where T <: Hashable & Equatable<T> {
 
 }
 
-extend HashSet<T> <: KtCollection<T> where T <: Equatable<T> {
+extend<T> HashSet<T> <: KtCollection<T> where T <: Equatable<T> {
 
     // 操作符
     public operator func +(right: Collection<T>): HashSet<T> {
@@ -1422,7 +1412,7 @@ extend HashSet<T> <: KtCollection<T> where T <: Equatable<T> {
 }
 
 
-extend HashMap<K, V> <: KtMap<K, V> where K <: Hashable & Equatable<K> {
+extend<K, V> HashMap<K, V> <: KtMap<K, V> where K <: Hashable & Equatable<K> {
 
     // 操作符
     public operator func +(right: Map<K, V>): HashMap<K, V> {
@@ -1508,7 +1498,7 @@ extend HashMap<K, V> <: KtMap<K, V> where K <: Hashable & Equatable<K> {
 }
 
 
-extend TreeMap<K, V> <: KtMap<K, V> where K <: Hashable & Equatable<K> {
+extend<K, V> TreeMap<K, V> <: KtMap<K, V> where K <: Hashable & Equatable<K> {
     // 操作符
     public operator func +(right: Map<K, V>): TreeMap<K, V> {
         return TreeMap(plus(this, right))
@@ -1592,7 +1582,7 @@ extend TreeMap<K, V> <: KtMap<K, V> where K <: Hashable & Equatable<K> {
 
 }
 
-extend ConcurrentHashMap<K, V> <: KtMap<K, V> where K <: Hashable & Equatable<K> {
+extend<K, V> ConcurrentHashMap<K, V> <: KtMap<K, V> where K <: Hashable & Equatable<K> {
     // 操作符
     public operator func +(right: ConcurrentHashMap<K, V>): ConcurrentHashMap<K, V> {
         return plus(this, right)

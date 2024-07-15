@@ -1,6 +1,6 @@
 # kcj
 
-Kotlin集合操作的仓颉移植
+Kotlin集合操作的仓颉移植，已适配仓颉 0.53.4
 
 使用方法: 在```[dependencies]``` 段内通过 github url 直接引用
 

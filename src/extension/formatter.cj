@@ -1,4 +1,6 @@
-package extension
+package kcj.extension
+
+import std.collection.*
 
 class StrFormatter {
 
@@ -27,15 +29,15 @@ class StrFormatter {
                 sbuf.append(strPattern.substring(handledPosition, strPatternLength))
                 return sbuf.toString()
             }
-            if (delimIndex > 0 && Int64(strPattern[delimIndex - 1]) == '\\'.code) {
-                if (delimIndex > 1 && Int64(strPattern[delimIndex - 2]) == '\\'.code) {
+            if (delimIndex > 0 && UInt32(strPattern[delimIndex - 1]) == UInt32(r'\\')) {
+                if (delimIndex > 1 && UInt32(strPattern[delimIndex - 2]) == UInt32(r'\\')) {
                     sbuf.append(strPattern.substring(handledPosition, delimIndex - 1))
                     sbuf.append(argArray[argIndex].toString())
                     handledPosition = delimIndex + placeHolderLength
                 } else {
                     argIndex--
                     sbuf.append(strPattern.substring(handledPosition, delimIndex - 1))
-                    sbuf.append(Char(placeHolder[0]))
+                    sbuf.append(Rune(placeHolder[0]))
                     handledPosition = delimIndex + 1
                 }
             } else {

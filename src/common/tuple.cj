@@ -1,4 +1,4 @@
-package common
+package kcj.common
 
 type S = ToString
 
@@ -165,61 +165,61 @@ public class Duodecuple<A, B, C, D, E, F, G, H, I, J, K, L> <: S where A <: S, B
 
 type T12<A, B, C, D, E, F, G, H, I, J, K, L> = Duodecuple<A, B, C, D, E, F, G, H, I, J, K, L>
 
-extend Pair<A, B> {
+extend<A, B> Pair<A, B> {
     public operator func +(c: ToString): Triple<A, B, ToString> {
         return Triple(this.first, this.second, c)
     }
 }
 
-extend Triple<A, B, C> {
+extend<A, B, C> Triple<A, B, C> {
     public operator func +(d: ToString): Quadruple<A, B, C, ToString> {
         return Quadruple(this.first, this.second, this.third, d)
     }
 }
 
-extend Quadruple<A, B, C, D> {
+extend<A, B, C, D> Quadruple<A, B, C, D> {
     public operator func +(e: ToString): Pentuple<A, B, C, D, ToString> {
         return Pentuple(this.first, this.second, this.third, this.forth, e)
     }
 }
 
-extend Pentuple<A, B, C, D, E> {
+extend<A, B, C, D, E> Pentuple<A, B, C, D, E> {
     public operator func +(f: ToString): Hextuple<A, B, C, D, E, ToString> {
         return Hextuple(this.first, this.second, this.third, this.forth, this.fifth, f)
     }
 }
 
-extend Hextuple<A, B, C, D, E, F> {
+extend<A, B, C, D, E, F> Hextuple<A, B, C, D, E, F> {
     public operator func +(g: ToString): Septuple<A, B, C, D, E, F, ToString> {
         return Septuple(this.first, this.second, this.third, this.forth, this.fifth, this.sixth, g)
     }
 }
 
-extend Septuple<A, B, C, D, E, F, G> {
+extend<A, B, C, D, E, F, G> Septuple<A, B, C, D, E, F, G> {
     public operator func +(h: ToString): Octuple<A, B, C, D, E, F, G, ToString> {
         return Octuple(this.first, this.second, this.third, this.forth, this.fifth, this.sixth, this.seventh, h)
     }
 }
 
-extend Octuple<A, B, C, D, E, F, G, H> {
+extend<A, B, C, D, E, F, G, H> Octuple<A, B, C, D, E, F, G, H> {
     public operator func +(i: ToString): Nonuple<A, B, C, D, E, F, G, H, ToString> {
         return Nonuple(this.first, this.second, this.third, this.forth, this.fifth, this.sixth, this.seventh, this.eighth, i)
     }
 }
 
-extend Nonuple<A, B, C, D, E, F, G, H, I> {
+extend<A, B, C, D, E, F, G, H, I> Nonuple<A, B, C, D, E, F, G, H, I> {
     public operator func +(j: ToString): Decuple<A, B, C, D, E, F, G, H, I, ToString> {
         return Decuple(this.first, this.second, this.third, this.forth, this.fifth, this.sixth, this.seventh, this.eighth, this.ninth, j)
     }
 }
 
-extend Decuple<A, B, C, D, E, F, G, H, I, J> {
+extend<A, B, C, D, E, F, G, H, I, J> Decuple<A, B, C, D, E, F, G, H, I, J> {
     public operator func +(k: ToString): Undecuple<A, B, C, D, E, F, G, H, I, J, ToString> {
         return Undecuple(this.first, this.second, this.third, this.forth, this.fifth, this.sixth, this.seventh, this.eighth, this.ninth, this.tenth, k)
     }
 }
 
-extend Undecuple<A, B, C, D, E, F, G, H, I, J, K> {
+extend<A, B, C, D, E, F, G, H, I, J, K> Undecuple<A, B, C, D, E, F, G, H, I, J, K> {
     public operator func +(l: ToString): Duodecuple<A, B, C, D, E, F, G, H, I, J, K, ToString> {
         return Duodecuple(this.first, this.second, this.third, this.forth, this.fifth, this.sixth, this.seventh, this.eighth, this.ninth, this.tenth, this.eleventh, l)
     }

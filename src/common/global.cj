@@ -1,8 +1,8 @@
-package common
+package kcj.common
 
-from std import collection.*
-from std import fs.*
-from std import collection.concurrent.*
+import std.collection.*
+import std.fs.*
+import std.collection.concurrent.*
 
 public func run<R>(block: () -> R): R {
     return block()

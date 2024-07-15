@@ -1,4 +1,6 @@
-package extension
+package kcj.extension
+
+import std.collection.*
 
 
 public func stringReplaceIndentByMargin(str: String, newIndent!: String = "", marginPrefix!: String = "|"): String {
@@ -61,8 +63,7 @@ func getIndentFunction(indent: String): (String) -> String {
 }
 
 
-extend Array<T> where T <: String {
-
+extend Array<String> {
 
     func mapIndexedNotNone(transform: (Int, String) -> ?String): Array<String> {
         let arr = ArrayList<String>()
@@ -78,7 +79,7 @@ extend Array<T> where T <: String {
     }
 
     func reindent(indentAddFunction: (String) -> String, indentCutFunction: (String) -> ?String): String {
-        let li = lastIndex
+        let li = this.size - 1
         return this.mapIndexedNotNone { i, v =>
             if ((i == 0 || i == li) && v.isAsciiBlank()) {
                 None
@@ -96,7 +97,7 @@ extend Array<T> where T <: String {
     }
 }
 
-extend Array<T> where T <: Comparable<T> {
+extend<T> Array<T> where T <: Comparable<T> {
 
     func minOrNone(): ?T {
         if (this.isEmpty()) {
