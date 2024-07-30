@@ -46,8 +46,10 @@ public interface KtString {
     func indexOfFirst(predicate: (Rune) -> Bool): Int
     func indexOfLast(predicate: (Rune) -> Bool): Int
     func replaceTag(tag: String, replacement: () -> String): String
-}
 
+    // override with prefix "k"
+    // func kIndexOf()
+}
 
 extend String <: KtString {
 

@@ -5,7 +5,7 @@ import std.collection.concurrent.*
 import std.math.min
 import kcj.common.*
 
-public interface KtCollection<T> where T <: Hashable & Equatable<T> {
+public interface KtCollection<T> {
 
     prop indices: Range<Int>
     prop lastIndex: Int
@@ -30,6 +30,16 @@ public interface KtCollection<T> where T <: Hashable & Equatable<T> {
     func forEachIndexed(action: (Int, T) -> Unit): Unit
     func reduce(operation: (T, T) -> T): T
     func reduceIndexed(operation: (Int, T, T) -> T): T
+
+}
+
+public interface KtCollectionE<T> where T <: Equatable<T> {
+    // override with prefix "k"
+    func kIndexOf(item: T): Int
+    func kLastIndexOf(item: T): Int
+}
+
+public interface KtCollectionHE<T> where T <: Hashable & Equatable<T> {
     func intersect(other: Collection<T>): HashSet<T>
     func subtract(other: Collection<T>): HashSet<T>
     func union(other: Collection<T>): HashSet<T>
@@ -46,17 +56,17 @@ public interface KtMap<K, V> where K <: Hashable & Equatable<K> {
     
 }
 
-extend<T> Array<T> <: KtCollection<T> where T <: Hashable & Equatable<T> {
+extend<T> Array<T> <: KtCollection<T> {
 
     // 操作符
     public operator func +(right: Collection<T>): Array<T> {
         return plus(this, right).toArray()
     }
 
-    public operator func -(right: Collection<T>): Array<T> {
-        return minus(this, right).toArray()
+    public operator func +(right: T): Array<T> {
+        return plus(this, right).toArray()
     }
-    
+
     public prop indices: Range<Int> {
         get() {
             return 0..this.size
@@ -279,24 +289,16 @@ extend<T> Array<T> <: KtCollection<T> where T <: Hashable & Equatable<T> {
         return arr.toArray()
     }
 
-    public func associate<K, V>(transform: (T) -> (K, V)): Map<K, V> where K <: Hashable & Equatable<K> {
+    public func associate<K, V>(transform: (T) -> (K, V)): HashMap<K, V> where K <: Hashable & Equatable<K> {
         return associate(this, transform)
     }
 
-    public func associateBy<K>(keySelector: (T) -> K): Map<K, T> where K <: Hashable & Equatable<K> {
+    public func associateBy<K>(keySelector: (T) -> K): HashMap<K, T> where K <: Hashable & Equatable<K> {
         return associateBy(this, keySelector)
     }
 
-    public func associateWith<V>(valueSelector: (T) -> V): Map<T, V> {
-        return associateWith(this, valueSelector)
-    }
-
-    public func groupBy<K>(keySelector: (T) -> K): Map<K, ArrayList<T>> where K <: Hashable & Equatable<K> {
+    public func groupBy<K>(keySelector: (T) -> K): HashMap<K, ArrayList<T>> where K <: Hashable & Equatable<K> {
         return groupBy(this, keySelector)
-    }
-    
-    public func distinct(): Array<T> {
-        return HashSet(this).toArray()
     }
 
     public func distinctBy<K>(selector: (T) -> K): Array<T> where K <: Hashable & Equatable<K> {
@@ -309,18 +311,6 @@ extend<T> Array<T> <: KtCollection<T> where T <: Hashable & Equatable<T> {
             }
         }
         return list.toArray()
-    }
-
-    public func intersect(other: Collection<T>): HashSet<T> {
-        return intersect(this, other)
-    }
-
-    public func subtract(other: Collection<T>): HashSet<T> {
-        return subtract(this, other)
-    }
-
-    public func union(other: Collection<T>): HashSet<T> {
-        return union(this, other)
     }
 
     public func onEach(action: (T) -> Unit): Array<T> {
@@ -382,17 +372,64 @@ extend<T> Array<T> <: KtCollection<T> where T <: Hashable & Equatable<T> {
         }
         return result.toArray()
     }
+
+    // TODO: 
 }
 
-extend<T> ArrayList<T> <: KtCollection<T> where T <: Hashable & Equatable<T> {
+extend<T> Array<T> <: KtCollectionE<T> where T <: Equatable<T> {
+    public operator func -(right: Collection<T>): Array<T> {
+        return minus(this, right).toArray()
+    }
+
+    public operator func -(right: T): Array<T> {
+        return minus(this, right).toArray()
+    }
+
+    public func kIndexOf(item: T): Int {
+        return indexOf(this, item)
+    }
+
+    public func kLastIndexOf(item: T): Int {
+        return lastIndexOf(this, item)
+    }
+
+    // TODO: 
+}
+
+extend<T> Array<T> <: KtCollectionHE<T> where T <: Hashable & Equatable<T> {
+
+    public func intersect(other: Collection<T>): HashSet<T> {
+        return intersect(this, other)
+    }
+
+    public func subtract(other: Collection<T>): HashSet<T> {
+        return subtract(this, other)
+    }
+
+    public func union(other: Collection<T>): HashSet<T> {
+        return union(this, other)
+    }
+
+    public func associateWith<V>(valueSelector: (T) -> V): HashMap<T, V> {
+        return associateWith(this, valueSelector)
+    }
+
+    public func distinct(): Array<T> {
+        return HashSet(this).toArray()
+    }
+
+    // TODO: 
+}
+
+extend<T> ArrayList<T> <: KtCollection<T> {
 
     // 操作符
     public operator func +(right: Collection<T>): ArrayList<T> {
         return plus(this, right)
     }
 
-    public operator func -(right: Collection<T>): ArrayList<T> {
-        return minus(this, right)
+    public operator func +(right: T): ArrayList<T> {
+        return plus(this, right)
     }
     
     public prop indices: Range<Int> {
@@ -453,14 +490,6 @@ extend<T> ArrayList<T> <: KtCollection<T> where T <: Hashable & Equatable<T> {
 
     public func getOrDefault(index: Int, def: () -> T): T {
         return this.get(index) ?? def()
-    }
-
-    public func indexOf(item: T): Int {
-        return indexOf(this, item)
-    }
-
-    public func lastIndexOf(item: T): Int {
-        return lastIndexOf(this, item)
     }
 
     public func indexOfFirst(predicate: (T) -> Bool): Int {
@@ -625,24 +654,16 @@ extend<T> ArrayList<T> <: KtCollection<T> where T <: Hashable & Equatable<T> {
         return arr
     }
 
-    public func associate<K, V>(transform: (T) -> (K, V)): Map<K, V> where K <: Hashable & Equatable<K> {
+    public func associate<K, V>(transform: (T) -> (K, V)): HashMap<K, V> where K <: Hashable & Equatable<K> {
         return associate(this, transform)
     }
 
-    public func associateBy<K>(keySelector: (T) -> K): Map<K, T> where K <: Hashable & Equatable<K> {
+    public func associateBy<K>(keySelector: (T) -> K): HashMap<K, T> where K <: Hashable & Equatable<K> {
         return associateBy(this, keySelector)
     }
 
-    public func associateWith<V>(valueSelector: (T) -> V): Map<T, V> {
-        return associateWith(this, valueSelector)
-    }
-
-    public func groupBy<K>(keySelector: (T) -> K): Map<K, ArrayList<T>> where K <: Hashable & Equatable<K> {
+    public func groupBy<K>(keySelector: (T) -> K): HashMap<K, ArrayList<T>> where K <: Hashable & Equatable<K> {
         return groupBy(this, keySelector)
-    }
-
-    public func distinct(): ArrayList<T> {
-        return ArrayList(HashSet(this))
     }
 
     public func distinctBy<K>(selector: (T) -> K): ArrayList<T> where K <: Hashable & Equatable<K> {
@@ -655,18 +676,6 @@ extend<T> ArrayList<T> <: KtCollection<T> where T <: Hashable & Equatable<T> {
             }
         }
         return list
-    }
-
-    public func intersect(other: Collection<T>): HashSet<T> {
-        return intersect(this, other)
-    }
-
-    public func subtract(other: Collection<T>): HashSet<T> {
-        return subtract(this, other)
-    }
-
-    public func union(other: Collection<T>): HashSet<T> {
-        return union(this, other)
     }
 
     public func onEach(action: (T) -> Unit): ArrayList<T> {
@@ -729,17 +738,67 @@ extend<T> ArrayList<T> <: KtCollection<T> where T <: Hashable & Equatable<T> {
         return result
     }
 
+    // TODO: 
+
 }
 
-extend<T> LinkedList<T> <: KtCollection<T> where T <: Hashable & Equatable<T> {
+extend<T> ArrayList<T> <: KtCollectionE<T> where T <: Equatable<T> {
+
+    public operator func -(right: Collection<T>): ArrayList<T> {
+        return minus(this, right)
+    }
+
+    public operator func -(right: T): ArrayList<T> {
+        return minus(this, right)
+    }
+
+    public func kIndexOf(item: T): Int {
+        return indexOf(this, item)
+    }
+
+    public func kLastIndexOf(item: T): Int {
+        return lastIndexOf(this, item)
+    }
+
+    // TODO: 
+
+}
+
+extend<T> ArrayList<T> <: KtCollectionHE<T> where T <: Hashable & Equatable<T> {
+
+    public func intersect(other: Collection<T>): HashSet<T> {
+        return intersect(this, other)
+    }
+
+    public func subtract(other: Collection<T>): HashSet<T> {
+        return subtract(this, other)
+    }
+
+    public func union(other: Collection<T>): HashSet<T> {
+        return union(this, other)
+    }
+
+    public func associateWith<V>(valueSelector: (T) -> V): HashMap<T, V> {
+        return associateWith(this, valueSelector)
+    }
+
+    public func distinct(): ArrayList<T> {
+        return ArrayList(HashSet(this))
+    }
+
+    // TODO: 
+}
+
+
+extend<T> LinkedList<T> <: KtCollection<T> {
 
     // 操作符
     public operator func +(right: Collection<T>): LinkedList<T> {
         return LinkedList(plus(this, right))
     }
 
-    public operator func -(right: Collection<T>): LinkedList<T> {
-        return LinkedList(minus(this, right))
+    public operator func +(right: T): LinkedList<T> {
+        return LinkedList(plus(this, right))
     }
     
     public prop indices: Range<Int> {
@@ -813,14 +872,6 @@ extend<T> LinkedList<T> <: KtCollection<T> where T <: Hashable & Equatable<T> {
             case Some(o) => o.value
             case _ => def()
         }
-    }
-
-    public func indexOf(item: T): Int {
-        return indexOf(this, item)
-    }
-
-    public func lastIndexOf(item: T): Int {
-        return lastIndexOf(this, item)
     }
 
     public func indexOfFirst(predicate: (T) -> Bool): Int {
@@ -989,24 +1040,16 @@ extend<T> LinkedList<T> <: KtCollection<T> where T <: Hashable & Equatable<T> {
         return arr
     }
 
-    public func associate<K, V>(transform: (T) -> (K, V)): Map<K, V> where K <: Hashable & Equatable<K> {
+    public func associate<K, V>(transform: (T) -> (K, V)): HashMap<K, V> where K <: Hashable & Equatable<K> {
         return associate(this, transform)
     }
 
-    public func associateBy<K>(keySelector: (T) -> K): Map<K, T> where K <: Hashable & Equatable<K> {
+    public func associateBy<K>(keySelector: (T) -> K): HashMap<K, T> where K <: Hashable & Equatable<K> {
         return associateBy(this, keySelector)
     }
 
-    public func associateWith<V>(valueSelector: (T) -> V): Map<T, V> {
-        return associateWith(this, valueSelector)
-    }
-
-    public func groupBy<K>(keySelector: (T) -> K): Map<K, ArrayList<T>> where K <: Hashable & Equatable<K> {
+    public func groupBy<K>(keySelector: (T) -> K): HashMap<K, ArrayList<T>> where K <: Hashable & Equatable<K> {
         return groupBy(this, keySelector)
-    }
-
-    public func distinct(): LinkedList<T> {
-        return LinkedList(HashSet(this))
     }
 
     public func distinctBy<K>(selector: (T) -> K): LinkedList<T> where K <: Hashable & Equatable<K> {
@@ -1019,18 +1062,6 @@ extend<T> LinkedList<T> <: KtCollection<T> where T <: Hashable & Equatable<T> {
             }
         }
         return list
-    }
-
-    public func intersect(other: Collection<T>): HashSet<T> {
-        return intersect(this, other)
-    }
-
-    public func subtract(other: Collection<T>): HashSet<T> {
-        return subtract(this, other)
-    }
-
-    public func union(other: Collection<T>): HashSet<T> {
-        return union(this, other)
     }
 
     public func onEach(action: (T) -> Unit): LinkedList<T> {
@@ -1093,16 +1124,73 @@ extend<T> LinkedList<T> <: KtCollection<T> where T <: Hashable & Equatable<T> {
         return result
     }
 
+    // TODO: 
+
 }
 
-extend<T> HashSet<T> <: KtCollection<T> where T <: Equatable<T> {
+extend<T> LinkedList<T> <: KtCollectionE<T> where T <: Equatable<T> {
+    public operator func -(right: Collection<T>): LinkedList<T> {
+        return LinkedList(minus(this, right))
+    }
+
+    public operator func -(right: T): LinkedList<T> {
+        return LinkedList(minus(this, right))
+    }
+
+    public func kIndexOf(item: T): Int {
+        return indexOf(this, item)
+    }
+
+    public func kLastIndexOf(item: T): Int {
+        return lastIndexOf(this, item)
+    }
+
+    // TODO: 
+
+}
+
+extend<T> LinkedList<T> <: KtCollectionHE<T> where T <: Hashable & Equatable<T> {
+
+    public func intersect(other: Collection<T>): HashSet<T> {
+        return intersect(this, other)
+    }
+
+    public func subtract(other: Collection<T>): HashSet<T> {
+        return subtract(this, other)
+    }
+
+    public func union(other: Collection<T>): HashSet<T> {
+        return union(this, other)
+    }
+
+    public func associateWith<V>(valueSelector: (T) -> V): HashMap<T, V> {
+        return associateWith(this, valueSelector)
+    }
+
+    public func distinct(): LinkedList<T> {
+        return LinkedList(HashSet(this))
+    }
+
+    // TODO: 
+}
+
+
+extend<T> HashSet<T> <: KtCollection<T> where T <: Hashable & Equatable<T> {
 
     // 操作符
     public operator func +(right: Collection<T>): HashSet<T> {
         return HashSet(plus(this, right))
     }
 
+    public operator func +(right: T): HashSet<T> {
+        return HashSet(plus(this, right))
+    }
+
     public operator func -(right: Collection<T>): HashSet<T> {
+        return HashSet(minus(this, right))
+    }
+
+    public operator func -(right: T): HashSet<T> {
         return HashSet(minus(this, right))
     }
 
@@ -1353,19 +1441,19 @@ extend<T> HashSet<T> <: KtCollection<T> where T <: Equatable<T> {
         return arr
     }
 
-    public func associate<K, V>(transform: (T) -> (K, V)): Map<K, V> where K <: Hashable & Equatable<K> {
+    public func associate<K, V>(transform: (T) -> (K, V)): HashMap<K, V> where K <: Hashable & Equatable<K> {
         return associate(this, transform)
     }
 
-    public func associateBy<K>(keySelector: (T) -> K): Map<K, T> where K <: Hashable & Equatable<K> {
+    public func associateBy<K>(keySelector: (T) -> K): HashMap<K, T> where K <: Hashable & Equatable<K> {
         return associateBy(this, keySelector)
     }
 
-    public func associateWith<V>(valueSelector: (T) -> V): Map<T, V> {
+    public func associateWith<V>(valueSelector: (T) -> V): HashMap<T, V> {
         return associateWith(this, valueSelector)
     }
 
-    public func groupBy<K>(keySelector: (T) -> K): Map<K, ArrayList<T>> where K <: Hashable & Equatable<K> {
+    public func groupBy<K>(keySelector: (T) -> K): HashMap<K, ArrayList<T>> where K <: Hashable & Equatable<K> {
         return groupBy(this, keySelector)
     }
 
@@ -1409,13 +1497,18 @@ extend<T> HashSet<T> <: KtCollection<T> where T <: Equatable<T> {
         }
         return (first, second)
     }
+
+    // TODO:
 }
 
 
 extend<K, V> HashMap<K, V> <: KtMap<K, V> where K <: Hashable & Equatable<K> {
 
-    // 操作符
     public operator func +(right: Map<K, V>): HashMap<K, V> {
+        return plus(this, right)
+    }
+
+    public operator func +(right: (K, V)): HashMap<K, V> {
         return plus(this, right)
     }
 
@@ -1423,6 +1516,10 @@ extend<K, V> HashMap<K, V> <: KtMap<K, V> where K <: Hashable & Equatable<K> {
         return minus(this, right)
     }
 
+    public operator func -(key: K): HashMap<K, V> {
+        return minus(this, key)
+    }
+
     public func getOrPut(key: K, defaultValue: () -> V): V {
         return match(this.get(key)) {
             case Some(value) => value
@@ -1494,19 +1591,30 @@ extend<K, V> HashMap<K, V> <: KtMap<K, V> where K <: Hashable & Equatable<K> {
     public func onEachIndexed(action: (Int, K, V) -> Unit): HashMap<K, V> {
         return onEachIndexed(this, action)
     }
+
+    // TODO:
     
 }
 
 
 extend<K, V> TreeMap<K, V> <: KtMap<K, V> where K <: Hashable & Equatable<K> {
+
     // 操作符
     public operator func +(right: Map<K, V>): TreeMap<K, V> {
+        return TreeMap(plus(this, right))
+    }
+
+    public operator func +(right: (K, V)): TreeMap<K, V> {
         return TreeMap(plus(this, right))
     }
 
     public operator func -(right: Map<K, V>): TreeMap<K, V> {
         return TreeMap(minus(this, right))
     }
+
+    public operator func -(key: K): TreeMap<K, V> {
+        return TreeMap(minus(this, key))
+    }
     
     public func getOrPut(key: K, defaultValue: () -> V): V {
         return match(this.get(key)) {
@@ -1548,37 +1656,79 @@ extend<K, V> TreeMap<K, V> <: KtMap<K, V> where K <: Hashable & Equatable<K> {
         return map(this, transform)
     }
 
-    public func mapKeys<R>(transform: (K, V) -> R): HashMap<R, V> where R <: Hashable & Equatable<R> {
-        return mapKeys(this, transform)
+    public func mapKeys<R>(transform: (K, V) -> R): TreeMap<R, V> where R <: Hashable & Equatable<R> & Comparable<R> {
+        let dest = TreeMap<R, V>()
+        for ((k, v) in this) {
+            dest[transform(k, v)] = v
+        }
+        return dest
     }
     
-    public func mapValues<R>(transform: (K, V) -> R): HashMap<K, R> {
-        return mapValues(this, transform)
+    public func mapValues<R>(transform: (K, V) -> R): TreeMap<K, R> {
+         let dest = TreeMap<K, R>()
+        for ((k, v) in this) {
+            dest[k] = transform(k, v)
+        }
+        return dest
     }
     
-    public func filterKeys(predicate: (K) -> Bool): HashMap<K, V> {
-        return filterKeys(this, predicate)
+    public func filterKeys(predicate: (K) -> Bool): TreeMap<K, V> {
+        let dest = TreeMap<K, V>()
+        for ((k, v) in this) {
+            if (predicate(k)) {
+                dest[k] = v
+            }
+        }
+        return dest
     }
 
-    public func filterValues(predicate: (V) -> Bool): HashMap<K, V> {
-        return filterValues(this, predicate)
+    public func filterValues(predicate: (V) -> Bool): TreeMap<K, V> {
+        let dest = TreeMap<K, V>()
+        for ((k, v) in this) {
+            if (predicate(v)) {
+                dest[k] = v
+            }
+        }
+        return dest
     }
 
-    public func filter(predicate: (K, V) -> Bool): HashMap<K, V> {
-        return filter(this, predicate)
+    public func filter(predicate: (K, V) -> Bool): TreeMap<K, V> {
+        let dest = TreeMap<K, V>()
+        for ((k, v) in this) {
+            if (predicate(k, v)) {
+                dest[k] = v
+            }
+        }
+        return dest
     }
 
-    public func filterNot(predicate: (K, V) -> Bool): HashMap<K, V> {
-        return filterNot(this, predicate)
+    public func filterNot(predicate: (K, V) -> Bool): TreeMap<K, V> {
+        let dest = TreeMap<K, V>()
+        for ((k, v) in this) {
+            if (!predicate(k, v)) {
+                dest[k] = v
+            }
+        }
+        return dest
     }
     
-    public func onEach(action: (K, V) -> Unit): HashMap<K, V> {
-        return onEach(this, action)
+    public func onEach(action: (K, V) -> Unit): TreeMap<K, V> {
+        for ((k, v) in this) {
+            action(k, v)
+        }
+        return this
     }
 
-    public func onEachIndexed(action: (Int, K, V) -> Unit): HashMap<K, V> {
-        return onEachIndexed(this, action)
+    public func onEachIndexed(action: (Int, K, V) -> Unit): TreeMap<K, V> {
+        var index = 0
+        for ((k, v) in this) {
+            action(index, k, v)
+            index++
+        }
+        return this
     }
+
+    // TODO:
 
 }
 
@@ -1588,8 +1738,16 @@ extend<K, V> ConcurrentHashMap<K, V> <: KtMap<K, V> where K <: Hashable & Equata
         return plus(this, right)
     }
 
+    public operator func +(right: (K, V)): ConcurrentHashMap<K, V> {
+        return plus(this, right)
+    }
+
     public operator func -(right: ConcurrentHashMap<K, V>): ConcurrentHashMap<K, V> {
         return minus(this, right)
+    }
+
+    public operator func -(key: K): ConcurrentHashMap<K, V> {
+        return minus(this, key)
     }
     
     public func getOrPut(key: K, defaultValue: () -> V): V {
@@ -1712,6 +1870,9 @@ extend<K, V> ConcurrentHashMap<K, V> <: KtMap<K, V> where K <: Hashable & Equata
         }
         return this
     }
+
+    // TODO：
+    
 }
 
 func joinToString<T>(col: Collection<T>, separator!: String = ", ", prefix!: String = "", postfix!: String = "", transform!: (T) -> String): String {
@@ -2011,7 +2172,7 @@ func takeWhile<T>(col: Collection<T>, predicate: (T) -> Bool): ArrayList<T> {
     return arr
 }
 
-func associate<T, K, V>(col: Collection<T>, transform: (T) -> (K, V)): Map<K, V> where K <: Hashable & Equatable<K> {
+func associate<T, K, V>(col: Collection<T>, transform: (T) -> (K, V)): HashMap<K, V> where K <: Hashable & Equatable<K> {
     let m = HashMap<K, V>()
     for (e in col) {
         let (k, v) = transform(e)
@@ -2020,7 +2181,7 @@ func associate<T, K, V>(col: Collection<T>, transform: (T) -> (K, V)): Map<K, V>
     return m
 }
 
-func associateBy<K, T>(col: Collection<T>, keySelector: (T) -> K): Map<K, T> where K <: Hashable & Equatable<K> {
+func associateBy<K, T>(col: Collection<T>, keySelector: (T) -> K): HashMap<K, T> where K <: Hashable & Equatable<K> {
     let m = HashMap<K, T>()
     for (e in col) {
         let key = keySelector(e)
@@ -2029,7 +2190,7 @@ func associateBy<K, T>(col: Collection<T>, keySelector: (T) -> K): Map<K, T> whe
     return m
 }
 
-func associateWith<T, V>(col: Collection<T>, valueSelector: (T) -> V): Map<T, V> where T <: Hashable & Equatable<T> {
+func associateWith<T, V>(col: Collection<T>, valueSelector: (T) -> V): HashMap<T, V> where T <: Hashable & Equatable<T> {
     let m = HashMap<T, V>()
     for (e in col) {
         let value = valueSelector(e)
@@ -2038,7 +2199,7 @@ func associateWith<T, V>(col: Collection<T>, valueSelector: (T) -> V): Map<T, V>
     return m
 }
 
-func groupBy<T, K>(col: Collection<T>, keySelector: (T) -> K): Map<K, ArrayList<T>> where K <: Hashable & Equatable<K> {
+func groupBy<T, K>(col: Collection<T>, keySelector: (T) -> K): HashMap<K, ArrayList<T>> where K <: Hashable & Equatable<K> {
     let m = HashMap<K, ArrayList<T>>()
     for (e in col) {
         let key = keySelector(e)
@@ -2073,10 +2234,22 @@ func plus<T>(col1: Collection<T>, col2: Collection<T>): ArrayList<T> {
     return arr
 }
 
+func plus<T>(col1: Collection<T>, item: T): ArrayList<T> {
+    let arr = ArrayList(col1)
+    arr.append(item)
+    return arr
+}
+
 func minus<T>(col1: Collection<T>, col2: Collection<T>): ArrayList<T> where T <: Equatable<T> {
     let arr = ArrayList(col1)
     let other = ArrayList(col2)
     arr.removeIf { it => other.contains(it) }
+    return arr
+}
+
+func minus<T>(col1: Collection<T>, item: T): ArrayList<T> where T <: Equatable<T> {
+    let arr = ArrayList(col1)
+    arr.removeIf { it => it == item }
     return arr
 }
 
@@ -2086,10 +2259,22 @@ func plus<K, V>(m1: Map<K, V>, m2: Map<K, V>): HashMap<K, V> where K <: Hashable
     return map
 }
 
+func plus<K, V>(m1: Map<K, V>, item: (K, V)): HashMap<K, V> where K <: Hashable & Equatable<K> {
+    let map = HashMap(m1)
+    map.put(item[0], item[1])
+    return map
+}
+
 func minus<K, V>(m1: Map<K, V>, m2: Map<K, V>): HashMap<K, V> where K <: Hashable & Equatable<K> {
     let map = HashMap(m1)
     let other = HashMap(m2)
     map.removeIf { k, _ => other.contains(k) }
+    return map
+}
+
+func minus<K, V>(m1: Map<K, V>, key: K): HashMap<K, V> where K <: Hashable & Equatable<K> {
+    let map = HashMap(m1)
+    map.removeIf { k, _ => k == key }
     return map
 }
 
@@ -2101,11 +2286,23 @@ func plus<K, V>(m1: ConcurrentHashMap<K, V>, m2: ConcurrentHashMap<K, V>): Concu
     return map
 }
 
+func plus<K, V>(m1: ConcurrentHashMap<K, V>, item: (K, V)): ConcurrentHashMap<K, V> where K <: Hashable & Equatable<K> {
+    let map = ConcurrentHashMap(m1)
+    map.put(item[0], item[1])
+    return map
+}
+
 func minus<K, V>(m1: ConcurrentHashMap<K, V>, m2: ConcurrentHashMap<K, V>): ConcurrentHashMap<K, V> where K <: Hashable & Equatable<K> {
     let map = ConcurrentHashMap(m1)
     for ((k, _) in m2) {
         map.remove(k)
     }
+    return map
+}
+
+func minus<K, V>(m1: ConcurrentHashMap<K, V>, key: K): ConcurrentHashMap<K, V> where K <: Hashable & Equatable<K> {
+    let map = ConcurrentHashMap(m1)
+    map.remove(key)
     return map
 }
 

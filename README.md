@@ -15,8 +15,9 @@ kcj = { git = "https://github.com/rarnu/kcj" }
 ```cangjie
 package sample
 
-from kcj import extension.*
-from std import collection.*
+import kcj.extension.*
+import kcj.common.*
+import std.collection.*
 
 main(): Int64 {
     let str = "abcdefg"
@@ -29,8 +30,8 @@ main(): Int64 {
     println(l1 - l2)    // [1,2]
     println(l1.intersect(l2))   // [3,4]
 
-    let m1 = HashMap(("a", 1), ("b", 2), ("c", 3))
-    let m2 = HashMap(("x", 10), ("y", 20), ("z", 30))
+    let m1 = hashMapOf(("a", 1), ("b", 2), ("c", 3))
+    let m2 = hashMapOf(("x", 10), ("y", 20), ("z", 30))
     println(m1 + m2)    // [(a, 1), (b, 2), (c, 3), (x, 10), (y, 20), (z, 30)]
     println(mapToList(m1))  // [Pair(a, 1), Pair(b, 2), Pair(c, 3)]
 

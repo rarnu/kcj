@@ -53,3 +53,17 @@ public func hashMapOf<K, V>(tu: Array<(K, V)>): HashMap<K, V> where K <: Hashabl
 public func concurrentHashMapOf<K, V>(tu: Array<(K, V)>): ConcurrentHashMap<K, V> where K <: Hashable & Equatable<K> {
     return ConcurrentHashMap(tu)
 }
+
+public class NotImplementedError <: Exception {
+    public NotImplementedError(message!: String = "An operation is not implemented.") {
+        super(message)
+    }
+}
+
+public func TODO() {
+    throw NotImplementedError()
+}
+
+public func TODO(reason: String) {
+    throw NotImplementedError(message: "An operation is not implemented: ${reason}")
+}

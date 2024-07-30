@@ -13,7 +13,7 @@ public interface KtInt {
     func toBool(): Bool
     func toDateTimeMs(): DateTime
     func toDateTime(): DateTime
-    func toChar(): Rune
+    func toRune(): Rune
 }
 
 public interface KtFloat {
@@ -86,7 +86,7 @@ extend Int <: KtInt {
         return DateTime.fromUnixTimeStamp(this * Duration.second).inTimeZone(TimeZone.Local)
     }
 
-    public func toChar(): Rune {
+    public func toRune(): Rune {
         return Rune(this)
     }
 

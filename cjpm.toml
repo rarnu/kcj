@@ -6,7 +6,7 @@
   description = "Kotlin集合操作的仓颉移植"
   link-option = ""
   name = "kcj"
-  output-type = "executable"
+  output-type = "static"
   src-dir = ""
   target-dir = ""
   version = "0.1.0"
