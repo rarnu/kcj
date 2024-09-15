@@ -47,8 +47,26 @@ public interface KtString {
     func indexOfLast(predicate: (Rune) -> Bool): Int
     func replaceTag(tag: String, replacement: () -> String): String
 
+    func toRuneArray(): Array<Rune>
+    func takeWhile(predicate: (Rune) -> Bool): String
+    func takeLastWhile(predicate: (Rune) -> Bool): String
+    func dropWhile(predicate: (Rune) -> Bool): String
+    func dropLastWhile(predicate: (Rune) -> Bool): String
+    func filter(predicate: (Rune) -> Bool): String
+    func filterIndexed(predicate: (Int, Rune) -> Bool): String
+    func filterNot(predicate: (Rune) -> Bool): String
+    func filterNotIndexed(predicate: (Int, Rune) -> Bool): String
+    func reversed(): String
+    func all(predicate: (Rune) -> Bool): Bool
+    func any(predicate: (Rune) -> Bool): Bool
+    func none(predicate: (Rune) -> Bool): Bool
+    func count(predicate: (Rune) -> Bool): Int
+    func forEach(action: (Rune) -> Unit): Unit
+    func forEachIndexed(action: (Int, Rune) -> Unit): Unit
+
     // override with prefix "k"
-    // func kIndexOf()
+    func kIndexOf(str: String, startIndex!: Int): Int
+    func kLastIndexOf(str: String, startIndex!: Int): Int
 }
 
 extend String <: KtString {
@@ -297,6 +315,185 @@ extend String <: KtString {
 
     public func replaceTag(tag: String, replacement: () -> String): String {
         return this.replace(tag, replacement())
+    }
+
+    public func takeWhile(predicate: (Rune) -> Bool): String {
+        for (index in 0..this.size) {
+            if (!predicate(Rune(this[index]))) {
+                return this.substring(0, index)
+            }
+        }
+        return this
+    }
+
+    public func takeLastWhile(predicate: (Rune) -> Bool): String {
+        for (index in lastIndex..=0) {
+            if (!predicate(Rune(this[index]))) {
+                return this.substring(index + 1)
+            }
+        }
+        return this
+    }
+
+    public func dropWhile(predicate: (Rune) -> Bool): String {
+        for (index in this.indices) {
+            if (!predicate(Rune(this[index]))) {
+                return this.substring(index)
+            }
+        }
+        return ""
+    }
+
+    public func dropLastWhile(predicate: (Rune) -> Bool): String {
+        for (index in lastIndex..=0) {
+            if (!predicate(Rune(this[index]))) {
+                return this.substring(0, index + 1)
+            }
+        }
+        return ""
+    }
+
+    public func filter(predicate: (Rune) -> Bool): String {
+        let sb = StringBuilder()
+        for (item in this) {
+            if (predicate(Rune(item))) {
+                sb.append(Rune(item))
+            }
+        }
+        return sb.toString()
+    }
+
+    public func filterIndexed(predicate: (Int, Rune) -> Bool): String {
+        let sb = StringBuilder()
+        var index = 0
+        for (item in this) {
+            if (predicate(index, Rune(item))) {
+                sb.append(Rune(item))
+            }
+            index++
+        }
+        return sb.toString()
+    }
+
+    public func filterNot(predicate: (Rune) -> Bool): String {
+        let sb = StringBuilder()
+        for (item in this) {
+            if (!predicate(Rune(item))) {
+                sb.append(Rune(item))
+            }
+        }
+        return sb.toString()
+    }
+
+    public func filterNotIndexed(predicate: (Int, Rune) -> Bool): String {
+        let sb = StringBuilder()
+        var index = 0
+        for (item in this) {
+            if (!predicate(index, Rune(item))) {
+                sb.append(Rune(item))
+            }
+            index++
+        }
+        return sb.toString()
+    }
+
+    public func reversed(): String {
+        let sb = StringBuilder()
+        for (i in lastIndex..=0) {
+            sb.append(Rune(this[i]))
+        }
+        return sb.toString()
+    }
+
+    public func all(predicate: (Rune) -> Bool): Bool {
+        if (this.isEmpty()) {
+            return true
+        }
+        for (e in this) {
+            if (!predicate(Rune(e))) {
+                return false
+            }
+        }
+        return true
+    }
+
+    public func any(predicate: (Rune) -> Bool): Bool {
+        if (this.isEmpty()) {
+            return false
+        }
+        for (e in this) {
+            if (predicate(Rune(e))) {
+                return true
+            }
+        }
+        return false
+    }
+
+    public func none(predicate: (Rune) -> Bool): Bool {
+        if (this.isEmpty()) {
+            return true
+        }
+        for (e in this) {
+            if (predicate(Rune(e))) {
+                return false
+            }
+        }
+        return true
+    }
+
+    public func count(predicate: (Rune) -> Bool): Int {
+        if (this.isEmpty()) {
+            return 0
+        }
+        var count = 0
+        for (e in this) {
+            if (predicate(Rune(e))) {
+                count++
+            }
+        }
+        return count
+    }
+
+    public func forEach(action: (Rune) -> Unit): Unit {
+        for (e in this) {
+            action(Rune(e))
+        }
+    }
+
+    public func forEachIndexed(action: (Int, Rune) -> Unit): Unit {
+        var index = 0
+        for (e in this) {
+            action(index, Rune(e))
+            index++
+        }
+    }
+
+    public func kIndexOf(str: String, startIndex!: Int): Int {
+        let ret = this.indexOf(str, startIndex)
+        return ret.getOrDefault { -1 }
+    }
+
+    public func kLastIndexOf(str: String, startIndex!: Int): Int {
+        let ret = this.lastIndexOf(str, startIndex)
+        return ret.getOrDefault { -1 }   
+    }
+
+    public func map<R>(transform: (Rune) -> R): ArrayList<R> {
+        let ret = ArrayList<R>()
+        for (e in this) {
+            ret.append(transform(Rune(e)))
+        }
+        return ret
+    }
+
+    public func mapIndexed<R>(transform: (Int, Rune) -> R): ArrayList<R> {
+        var index = 0
+        let ret = ArrayList<R>()
+        for (e in this) {
+            ret.append(transform(index, Rune(e)))
+            index++
+        }
+        return ret
     }
 }
 
