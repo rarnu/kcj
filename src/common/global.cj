@@ -14,22 +14,6 @@ public func repeat(times: Int, action: (Int) -> Unit) {
     }
 }
 
-public func listToMap<T, K, V>(col: Collection<T>): HashMap<K, V> where K <: Hashable & Equatable<K>, V <: Hashable & Equatable<V>, T <: Pair<K, V> {
-    let m = HashMap<K, V>()
-    for (e in col) {
-        m[e.first] = e.second
-    }
-    return m
-}
-
-public func mapToList<K, V>(map: Map<K, V>): ArrayList<Pair<K, V>> where K <: Hashable & Equatable<K> & ToString, V <: Hashable & Equatable<V> & ToString {
-    let l = ArrayList<Pair<K, V>>()
-    for ((k, v) in map) {
-        l.append(Pair(k, v))
-    }
-    return l
-}
-
 public func arrayOf<T>(arr: Array<T>): Array<T> {
     return arr.clone()
 }

@@ -2,10 +2,9 @@ package kcj.common
 
 type S = ToString
 
-
 public class Pair<A, B> <: S where A <: S, B <: S {
     
-    public Pair(var first: A, var second: B) { }
+    public Pair(public var first: A, public var second: B) { }
 
     public func toString(): String {
         return "Pair(${first}, ${second})"
@@ -20,7 +19,7 @@ type T2<A, B> = Pair<A, B>
 
 public class Triple<A, B, C> <: S where A <: S, B <: S, C <: S {
 
-    public Triple(var first: A, var second: B, var third: C) { }
+    public Triple(public var first: A, public var second: B, public var third: C) { }
 
     public func toString(): String {
         return "Triple(${first}, ${second}, ${third})"
@@ -34,7 +33,7 @@ public class Triple<A, B, C> <: S where A <: S, B <: S, C <: S {
 type T3<A, B, C> = Triple<A, B, C>
 
 public class Quadruple<A, B, C, D> <: S where A <: S, B <: S, C <: S, D <: S {
-    public Quadruple(var first: A, var second: B, var third: C, var forth: D) {}
+    public Quadruple(public var first: A, public var second: B, public var third: C, public var forth: D) {}
     public func toString(): String {
         return "Quadruple(${first}, ${second}, ${third}, ${forth})"
     }
@@ -48,7 +47,7 @@ public class Quadruple<A, B, C, D> <: S where A <: S, B <: S, C <: S, D <: S {
 type T4<A, B, C, D> = Quadruple<A, B, C, D>
 
 public class Pentuple<A, B, C, D, E> <: S where A <: S, B <: S, C <: S, D <: S, E <: S {
-    public Pentuple(var first: A, var second: B, var third: C, var forth: D, var fifth: E) {}
+    public Pentuple(public var first: A, public var second: B, public var third: C, public var forth: D, public var fifth: E) {}
     public func toString(): String {
         return "Pentuple(${first}, ${second}, ${third}, ${forth}, ${fifth})"
     }
@@ -63,7 +62,7 @@ type T5<A, B, C, D, E> = Pentuple<A, B, C, D, E>
 
 public class Hextuple<A, B, C, D, E, F> <: S where A <: S, B <: S, C <: S, D <: S, E <: S, F <: S {
 
-    public Hextuple(var first: A, var second: B, var third: C, var forth: D, var fifth: E, var sixth: F) { }
+    public Hextuple(public var first: A, public var second: B, public var third: C, public var forth: D, public var fifth: E, public var sixth: F) { }
 
     public func toString(): String {
         return "Hextuple(${first}, ${second}, ${third}, ${forth}, ${fifth}, ${sixth})"
@@ -79,7 +78,7 @@ type T6<A, B, C, D, E, F> = Hextuple<A, B, C, D, E, F>
 
 public class Septuple<A, B, C, D, E, F, G> <: S where A <: S, B <: S, C <: S, D <: S, E <: S, F <: S, G <: S {
 
-    public Septuple(var first: A, var second: B, var third: C, var forth: D, var fifth: E, var sixth: F, var seventh: G) {}
+    public Septuple(public var first: A, public var second: B, public var third: C, public var forth: D, public var fifth: E, public var sixth: F, public var seventh: G) {}
 
     public func toString(): String {
         return "Septuple(${first}, ${second}, ${third}, ${forth}, ${fifth}, ${sixth}, ${seventh})"
@@ -95,7 +94,7 @@ type T7<A, B, C, D, E, F, G> = Septuple<A, B, C, D, E, F, G>
 
 
 public class Octuple<A, B, C, D, E, F, G, H> <: S where A <: S, B <: S, C <: S, D <: S, E <: S, F <: S, G <: S, H <: S {
-    public Octuple(var first: A, var second: B, var third: C, var forth: D, var fifth: E, var sixth: F, var seventh: G, var eighth: H) {}
+    public Octuple(public var first: A, public var second: B, public var third: C, public var forth: D, public var fifth: E, public var sixth: F, public var seventh: G, public var eighth: H) {}
     public func toString(): String {
         return "Octuple(${first}, ${second}, ${third}, ${forth}, ${fifth}, ${sixth}, ${seventh}, ${eighth})"
     }
@@ -108,7 +107,7 @@ public class Octuple<A, B, C, D, E, F, G, H> <: S where A <: S, B <: S, C <: S, 
 type T8<A, B, C, D, E, F, G, H> = Octuple<A, B, C, D, E, F, G, H>
 
 public class Nonuple<A, B, C, D, E, F, G, H, I> <: S where A <: S, B <: S, C <: S, D <: S, E <: S, F <: S, G <: S, H <: S, I <: S {
-    public Nonuple(var first: A, var second: B, var third: C, var forth: D, var fifth: E, var sixth: F, var seventh: G, var eighth: H, var ninth: I) {}
+    public Nonuple(public var first: A, public var second: B, public var third: C, public var forth: D, public var fifth: E, public var sixth: F, public var seventh: G, public var eighth: H, public var ninth: I) {}
     public func toString(): String {
         return "Nonuple(${first}, ${second}, ${third}, ${forth}, ${fifth}, ${sixth}, ${seventh}, ${eighth}, ${ninth})"
     }
@@ -123,7 +122,7 @@ type T9<A, B, C, D, E, F, G, H, I> = Nonuple<A, B, C, D, E, F, G, H, I>
 
 
 public class Decuple<A, B, C, D, E, F, G, H, I, J> <: S where A <: S, B <: S, C <: S, D <: S, E <: S, F <: S, G <: S, H <: S, I <: S, J <: S {
-    public Decuple(var first: A, var second: B, var third: C, var forth: D, var fifth: E, var sixth: F, var seventh: G, var eighth: H, var ninth: I, var tenth: J) {}
+    public Decuple(public var first: A, public var second: B, public var third: C, public var forth: D, public var fifth: E, public var sixth: F, public var seventh: G, public var eighth: H, public var ninth: I, public var tenth: J) {}
     public func toString(): String {
         return "Decuple(${first}, ${second}, ${third}, ${forth}, ${fifth}, ${sixth}, ${seventh}, ${eighth}, ${ninth}, ${tenth})"
     }
@@ -137,7 +136,7 @@ public class Decuple<A, B, C, D, E, F, G, H, I, J> <: S where A <: S, B <: S, C 
 type T10<A, B, C, D, E, F, G, H, I, J> = Decuple<A, B, C, D, E, F, G, H, I, J>
 
 public class Undecuple<A, B, C, D, E, F, G, H, I, J, K> <: S where A <: S, B <: S, C <: S, D <: S, E <: S, F <: S, G <: S, H <: S, I <: S, J <: S, K <: S {
-    public Undecuple(var first: A, var second: B, var third: C, var forth: D, var fifth: E, var sixth: F, var seventh: G, var eighth: H, var ninth: I, var tenth: J, var eleventh: K) {}
+    public Undecuple(public var first: A, public var second: B, public var third: C, public var forth: D, public var fifth: E, public var sixth: F, public var seventh: G, public var eighth: H, public var ninth: I, public var tenth: J, public var eleventh: K) {}
     public func toString(): String {
         return "Undecuple(${first}, ${second}, ${third}, ${forth}, ${fifth}, ${sixth}, ${seventh}, ${eighth}, ${ninth}, ${tenth}, ${eleventh})"
     }
@@ -152,7 +151,7 @@ type T11<A, B, C, D, E, F, G, H, I, J, K> = Undecuple<A, B, C, D, E, F, G, H, I,
 
 
 public class Duodecuple<A, B, C, D, E, F, G, H, I, J, K, L> <: S where A <: S, B <: S, C <: S, D <: S, E <: S, F <: S, G <: S, H <: S, I <: S, J <: S, K <: S, L <: S {
-    public Duodecuple(var first: A, var second: B, var third: C, var forth: D, var fifth: E, var sixth: F, var seventh: G, var eighth: H, var ninth: I, var tenth: J, var eleventh: K, var twelvth: L) {}
+    public Duodecuple(public var first: A, public var second: B, public var third: C, public var forth: D, public var fifth: E, public var sixth: F, public var seventh: G, public var eighth: H, public var ninth: I, public var tenth: J, public var eleventh: K, public var twelvth: L) {}
     public func toString(): String {
         return "Duodecuple(${first}, ${second}, ${third}, ${forth}, ${fifth}, ${sixth}, ${seventh}, ${eighth}, ${ninth}, ${tenth}, ${eleventh}, ${twelvth})"
     }

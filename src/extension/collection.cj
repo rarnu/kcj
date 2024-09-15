@@ -2,8 +2,8 @@ package kcj.extension
 
 import std.collection.*
 import std.collection.concurrent.*
-import std.math.min
 import kcj.common.*
+import std.sort.*
 
 public interface KtCollection<T> {
 
@@ -30,19 +30,30 @@ public interface KtCollection<T> {
     func forEachIndexed(action: (Int, T) -> Unit): Unit
     func reduce(operation: (T, T) -> T): T
     func reduceIndexed(operation: (Int, T, T) -> T): T
-
+    func reduceRight(operation: (T, T) -> T): T
+    func reduceRightIndexed(operation: (Int, T, T) -> T): T
+    func joinTo(buf: StringBuilder, separator!: String, prefix!: String, postfix!: String, transform!: (T) -> String): StringBuilder
+    func binarySearch(fromIndex!: Int, toIndex!: Int, comparison!: (T) -> Int): Int
 }
 
 public interface KtCollectionE<T> where T <: Equatable<T> {
     // override with prefix "k"
     func kIndexOf(item: T): Int
     func kLastIndexOf(item: T): Int
+    func containsAll(items: Collection<T>): Bool
 }
 
 public interface KtCollectionHE<T> where T <: Hashable & Equatable<T> {
     func intersect(other: Collection<T>): HashSet<T>
     func subtract(other: Collection<T>): HashSet<T>
     func union(other: Collection<T>): HashSet<T>
+}
+
+public interface KtCollectionC<T> where T <: Comparable<T> {
+    func binarySearch(element: T, fromIndex!: Int, toIndex!: Int): Int
+
+    func max(): ?T
+    func min(): ?T
 }
 
 public interface KtMap<K, V> where K <: Hashable & Equatable<K> {
@@ -105,14 +116,6 @@ extend<T> Array<T> <: KtCollection<T> {
 
     public func lastOrNone(predicate: (T) -> Bool): ?T {
         return lastOrNone(this, predicate)
-    }
-
-    public func first(): T {
-        return this[0]
-    }
-
-    public func last(): T {
-        return this[this.size - 1]
     }
 
     public func firstOrDefault(def: () -> T): T {
@@ -223,14 +226,6 @@ extend<T> Array<T> <: KtCollection<T> {
                 arr.append(e)
             }
             index++
-        }
-        return arr.toArray()
-    }
-
-    public func map<R>(transform: (T) -> R): Array<R> {
-        let arr = ArrayList<R>()
-        for (e in this) {
-            arr.append(transform(e))
         }
         return arr.toArray()
     }
@@ -373,7 +368,86 @@ extend<T> Array<T> <: KtCollection<T> {
         return result.toArray()
     }
 
-    // TODO: 
+    public func filterTo(dest: ArrayList<T>, predicate: (T) -> Bool): ArrayList<T> {
+        return filterTo(this, dest, predicate)
+    }
+
+    public func filterNotTo(dest: ArrayList<T>, predicate: (T) -> Bool): ArrayList<T> {
+        return filterNotTo(this, dest, predicate)
+    }
+
+    public func filterIndexedTo(dest: ArrayList<T>, predicate: (Int, T) -> Bool): ArrayList<T> {
+        return filterIndexedTo(this, dest, predicate)
+    }
+
+    public func filterNotIndexedTo(dest: ArrayList<T>, predicate: (Int, T) -> Bool): ArrayList<T> {
+        return filterNotIndexedTo(this, dest, predicate)
+    }
+
+    public func reversed(): Array<T> {
+        return reversed(this).toArray()
+    }
+
+    public func associateByTo<K>(dest: HashMap<K, T>, keySelector: (T) -> K): HashMap<K, T> where K <: Hashable & Equatable<K> {
+        return associateByTo(this, dest, keySelector)
+    }
+
+    public func associateTo<K, V>(dest: HashMap<K, V>, transform: (T) -> (K, V)): HashMap<K, V> where K <: Hashable & Equatable<K> {
+        return associateTo(this, dest, transform)
+    }
+
+    public func flatMapTo<R>(dest: ArrayList<R>, transform: (T) -> Collection<R>): ArrayList<R> {
+        return flatMapTo(this, dest, transform)
+    }
+
+    public func flatMapIndexedTo<R>(dest: ArrayList<R>, transform: (Int, T) -> Collection<R>): ArrayList<R> {
+        return flatMapIndexedTo(this, dest, transform)
+    }
+
+    public func groupByTo<K>(dest: HashMap<K, ArrayList<T>>, keySelector: (T) -> K): HashMap<K, ArrayList<T>> where K <: Hashable & Equatable<K> {
+        return groupByTo(this, dest, keySelector)
+    }
+
+    public func mapTo<R>(dest: ArrayList<R>, transform: (T) -> R): ArrayList<R> {
+        return mapTo(this, dest, transform)
+    }
+
+    public func mapIndexedTo<R>(dest: ArrayList<R>, transform: (Int, T) -> R): ArrayList<R> {
+        return mapIndexedTo(this, dest, transform)
+    }
+
+    public func foldRight<R>(initial: R, operation: (T, R) -> R): R {
+        return foldRight(ArrayList(this), initial, operation)
+    }
+
+    public func foldRightIndexed<R>(initial: R, operation: (Int, T, R) -> R): R {
+        return foldRightIndexed(ArrayList(this), initial, operation)
+    }
+
+    public func reduceRight(operation: (T, T) -> T): T {
+        return reduceRight(ArrayList(this), operation)
+    }
+
+    public func reduceRightIndexed(operation: (Int, T, T) -> T): T {
+        return reduceRightIndexed(ArrayList(this), operation)
+    }
+
+    public func joinTo(buf: StringBuilder, separator!: String = ", ", prefix!: String = "", postfix!: String = "", transform!: (T) -> String): StringBuilder {
+        return joinTo(this, buf, separator: separator, prefix: prefix, postfix: postfix, transform: transform)
+    }
+    
+    public func binarySearch(fromIndex!: Int = 0, toIndex!: Int = size, comparison!: (T) -> Int): Int {
+        return binarySearch(ArrayList(this), fromIndex: fromIndex, toIndex: toIndex, comparison: comparison)
+    }
+
+    public func binarySearchBy<K>(key: K, fromIndex!: Int = 0, toIndex!: Int = 0, selector!: (T) -> K): Int where K <: Comparable<K> {
+        return binarySearchBy(ArrayList(this), key, fromIndex: fromIndex, toIndex: toIndex, selector: selector)
+    }
+
+    public func toArrayList(): ArrayList<T> {
+        return ArrayList(this)
+    }
+
 }
 
 extend<T> Array<T> <: KtCollectionE<T> where T <: Equatable<T> {
@@ -393,7 +467,9 @@ extend<T> Array<T> <: KtCollectionE<T> where T <: Equatable<T> {
         return lastIndexOf(this, item)
     }
 
-    // TODO: 
+    public func containsAll(items: Collection<T>): Bool {
+        return containsAll(ArrayList(this), items)
+    }
 }
 
 extend<T> Array<T> <: KtCollectionHE<T> where T <: Hashable & Equatable<T> {
@@ -418,7 +494,45 @@ extend<T> Array<T> <: KtCollectionHE<T> where T <: Hashable & Equatable<T> {
         return HashSet(this).toArray()
     }
 
-    // TODO: 
+    public func associateWithTo<V>(dest: HashMap<T, V>, valueSelector: (T) -> V): HashMap<T, V> {
+        return associateWithTo(this, dest, valueSelector)
+    }
+
+    public func toHashSet(): HashSet<T> {
+        return HashSet(this)
+    }
+
+}
+
+extend<T> Array<T> <: KtCollectionC<T> where T <: Comparable<T> {
+    public func binarySearch(element: T, fromIndex!: Int = 0, toIndex!: Int = size): Int {
+        return binarySearch(ArrayList(this), element, fromIndex: fromIndex, toIndex: toIndex)
+    }
+
+    public func max(): ?T {
+        return maxOrNone(this)
+    }
+
+    public func min(): ?T {
+        return minOrNone(this)
+    }
+
+    public func maxBy<R>(selector: (T) -> R): ?T where R <: Comparable<R> {
+        return maxByOrNone(this, selector)
+    }
+
+    public func maxOf<R>(selector: (T) -> R): R where R <: Comparable<R> {
+        return maxOf(this, selector)
+    }
+
+    public func minBy<R>(selector: (T) -> R): ?T where R <: Comparable<R> {
+        return minByOrNone(this, selector)
+    }
+
+    public func minOf<R>(selector: (T) -> R): R where R <: Comparable<R> {
+        return minOf(this, selector)
+    }
+
 }
 
 extend<T> ArrayList<T> <: KtCollection<T> {
@@ -738,7 +852,81 @@ extend<T> ArrayList<T> <: KtCollection<T> {
         return result
     }
 
-    // TODO: 
+    public func filterTo(dest: ArrayList<T>, predicate: (T) -> Bool): ArrayList<T> {
+        return filterTo(this, dest, predicate)
+    }
+
+    public func filterNotTo(dest: ArrayList<T>, predicate: (T) -> Bool): ArrayList<T> {
+        return filterNotTo(this, dest, predicate)
+    }
+
+    public func filterIndexedTo(dest: ArrayList<T>, predicate: (Int, T) -> Bool): ArrayList<T> {
+        return filterIndexedTo(this, dest, predicate)
+    }
+
+    public func filterNotIndexedTo(dest: ArrayList<T>, predicate: (Int, T) -> Bool): ArrayList<T> {
+        return filterNotIndexedTo(this, dest, predicate)
+    }
+
+    public func reversed(): ArrayList<T> {
+        return reversed(this)
+    }
+
+    public func associateByTo<K>(dest: HashMap<K, T>, keySelector: (T) -> K): HashMap<K, T> where K <: Hashable & Equatable<K> {
+        return associateByTo(this, dest, keySelector)
+    }
+
+    public func associateTo<K, V>(dest: HashMap<K, V>, transform: (T) -> (K, V)): HashMap<K, V> where K <: Hashable & Equatable<K> {
+        return associateTo(this, dest, transform)
+    }
+
+    public func flatMapTo<R>(dest: ArrayList<R>, transform: (T) -> Collection<R>): ArrayList<R> {
+        return flatMapTo(this, dest, transform)
+    }
+
+    public func flatMapIndexedTo<R>(dest: ArrayList<R>, transform: (Int, T) -> Collection<R>): ArrayList<R> {
+        return flatMapIndexedTo(this, dest, transform)
+    }
+
+    public func groupByTo<K>(dest: HashMap<K, ArrayList<T>>, keySelector: (T) -> K): HashMap<K, ArrayList<T>> where K <: Hashable & Equatable<K> {
+        return groupByTo(this, dest, keySelector)
+    }
+
+    public func mapTo<R>(dest: ArrayList<R>, transform: (T) -> R): ArrayList<R> {
+        return mapTo(this, dest, transform)
+    }
+
+    public func mapIndexedTo<R>(dest: ArrayList<R>, transform: (Int, T) -> R): ArrayList<R> {
+        return mapIndexedTo(this, dest, transform)
+    }
+
+    public func foldRight<R>(initial: R, operation: (T, R) -> R): R {
+        return foldRight(this, initial, operation)
+    }
+
+    public func foldRightIndexed<R>(initial: R, operation: (Int, T, R) -> R): R {
+        return foldRightIndexed(this, initial, operation)
+    }
+
+    public func reduceRight(operation: (T, T) -> T): T {
+        return reduceRight(this, operation)
+    }
+
+    public func reduceRightIndexed(operation: (Int, T, T) -> T): T {
+        return reduceRightIndexed(this, operation)
+    }
+
+    public func joinTo(buf: StringBuilder, separator!: String = ", ", prefix!: String = "", postfix!: String = "", transform!: (T) -> String): StringBuilder {
+        return joinTo(this, buf, separator: separator, prefix: prefix, postfix: postfix, transform: transform)
+    }
+    
+    public func binarySearch(fromIndex!: Int = 0, toIndex!: Int = size, comparison!: (T) -> Int): Int {
+        return binarySearch(this, fromIndex: fromIndex, toIndex: toIndex, comparison: comparison)
+    }
+
+    public func binarySearchBy<K>(key: K, fromIndex!: Int = 0, toIndex!: Int = 0, selector!: (T) -> K): Int where K <: Comparable<K> {
+        return binarySearchBy(this, key, fromIndex: fromIndex, toIndex: toIndex, selector: selector)
+    }
 
 }
 
@@ -760,8 +948,9 @@ extend<T> ArrayList<T> <: KtCollectionE<T> where T <: Equatable<T> {
         return lastIndexOf(this, item)
     }
 
-    // TODO: 
-
+    public func containsAll(items: Collection<T>): Bool {
+        return containsAll(this, items)
+    }
 }
 
 extend<T> ArrayList<T> <: KtCollectionHE<T> where T <: Hashable & Equatable<T> {
@@ -786,9 +975,44 @@ extend<T> ArrayList<T> <: KtCollectionHE<T> where T <: Hashable & Equatable<T> {
         return ArrayList(HashSet(this))
     }
 
-    // TODO: 
+    public func associateWithTo<V>(dest: HashMap<T, V>, valueSelector: (T) -> V): HashMap<T, V> {
+        return associateWithTo(this, dest, valueSelector)
+    }
+
+    public func toHashSet(): HashSet<T> {
+        return HashSet(this)
+    }
 }
 
+extend<T> ArrayList<T> <: KtCollectionC<T> where T <: Comparable<T> {
+    public func binarySearch(element: T, fromIndex!: Int = 0, toIndex!: Int = size): Int {
+        return binarySearch(this, element, fromIndex: fromIndex, toIndex: toIndex)
+    }
+
+    public func max(): ?T {
+        return maxOrNone(this)
+    }
+
+    public func min(): ?T {
+        return minOrNone(this)
+    }
+
+    public func maxBy<R>(selector: (T) -> R): ?T where R <: Comparable<R> {
+        return maxByOrNone(this, selector)
+    }
+
+    public func maxOf<R>(selector: (T) -> R): R where R <: Comparable<R> {
+        return maxOf(this, selector)
+    }
+
+    public func minBy<R>(selector: (T) -> R): ?T where R <: Comparable<R> {
+        return minByOrNone(this, selector)
+    }
+
+    public func minOf<R>(selector: (T) -> R): R where R <: Comparable<R> {
+        return minOf(this, selector)
+    }
+}
 
 extend<T> LinkedList<T> <: KtCollection<T> {
 
@@ -1124,8 +1348,137 @@ extend<T> LinkedList<T> <: KtCollection<T> {
         return result
     }
 
-    // TODO: 
+    public func filterTo(dest: LinkedList<T>, predicate: (T) -> Bool): LinkedList<T> {
+        for (element in this) {
+            if (predicate(element)) {
+                dest.append(element)
+            }
+        }
+        return dest
+    }
 
+    public func filterNotTo(dest: LinkedList<T>, predicate: (T) -> Bool): LinkedList<T> {
+        for (element in this) {
+            if (!predicate(element)) {
+                dest.append(element)
+            }
+        }
+        return dest
+    }
+
+    public func filterIndexedTo(dest: LinkedList<T>, predicate: (Int, T) -> Bool): LinkedList<T> {
+        var index = 0
+        for (element in this) {
+            if (predicate(index, element)) {
+                dest.append(element)
+            }
+            index++
+        }
+        return dest
+    }
+
+    public func filterNotIndexedTo(dest: LinkedList<T>, predicate: (Int, T) -> Bool): LinkedList<T> {
+        var index = 0
+        for (element in this) {
+            if (!predicate(index, element)) {
+                dest.append(element)
+            }
+            index++
+        }
+        return dest
+    }
+
+    public func reversed(): LinkedList<T> {
+        return LinkedList(reversed(this))
+    }
+
+    public func associateByTo<K>(dest: HashMap<K, T>, keySelector: (T) -> K): HashMap<K, T> where K <: Hashable & Equatable<K> {
+        return associateByTo(this, dest, keySelector)
+    }
+
+    public func associateTo<K, V>(dest: HashMap<K, V>, transform: (T) -> (K, V)): HashMap<K, V> where K <: Hashable & Equatable<K> {
+        return associateTo(this, dest, transform)
+    }
+
+    public func flatMapTo<R>(dest: LinkedList<R>, transform: (T) -> Collection<R>): LinkedList<R> {
+        for (element in this) {
+            let list = transform(element)
+            for (item in list) {
+                dest.append(item)
+            }
+        }
+        return dest
+    }
+
+    public func flatMapIndexedTo<R>(dest: LinkedList<R>, transform: (Int, T) -> Collection<R>): LinkedList<R> {
+        var index = 0
+        for (element in this) {
+            let list = transform(index, element)
+            for (item in list) {
+                dest.append(item)
+            }
+            index++
+        }
+        return dest
+    }
+
+    public func groupByTo<K>(dest: HashMap<K, LinkedList<T>>, keySelector: (T) -> K): HashMap<K, LinkedList<T>> where K <: Hashable & Equatable<K> {
+        for (element in this) {
+            let key = keySelector(element)
+            let list = dest.getOrPut(key) { LinkedList<T>() }
+            list.append(element)
+        }
+        return dest
+    }
+
+    public func mapTo<R>(dest: LinkedList<R>, transform: (T) -> R): LinkedList<R> {
+        for (item in this) {
+            dest.append(transform(item))
+        }
+        return dest
+    }
+
+    public func mapIndexedTo<R>(dest: LinkedList<R>, transform: (Int, T) -> R): LinkedList<R> {
+        var index = 0
+        for (item in this) {
+            dest.append(transform(index, item))
+            index++
+        }
+        return dest
+    }
+
+    public func foldRight<R>(initial: R, operation: (T, R) -> R): R {
+        return foldRight(ArrayList(this), initial, operation)
+    }
+
+    public func foldRightIndexed<R>(initial: R, operation: (Int, T, R) -> R): R {
+        return foldRightIndexed(ArrayList(this), initial, operation)
+    }
+
+    public func reduceRight(operation: (T, T) -> T): T {
+        return reduceRight(ArrayList(this), operation)
+    }
+
+    public func reduceRightIndexed(operation: (Int, T, T) -> T): T {
+        return reduceRightIndexed(ArrayList(this), operation)
+    }
+
+    public func joinTo(buf: StringBuilder, separator!: String = ", ", prefix!: String = "", postfix!: String = "", transform!: (T) -> String): StringBuilder {
+        return joinTo(this, buf, separator: separator, prefix: prefix, postfix: postfix, transform: transform)
+    }
+    
+    public func binarySearch(fromIndex!: Int = 0, toIndex!: Int = size, comparison!: (T) -> Int): Int {
+        return binarySearch(ArrayList(this), fromIndex: fromIndex, toIndex: toIndex, comparison: comparison)
+    }
+
+    public func binarySearchBy<K>(key: K, fromIndex!: Int = 0, toIndex!: Int = 0, selector!: (T) -> K): Int where K <: Comparable<K> {
+        return binarySearchBy(ArrayList(this), key, fromIndex: fromIndex, toIndex: toIndex, selector: selector)
+    }    
+
+
+    public func toArrayList(): ArrayList<T> {
+        return ArrayList(this)
+    }
 }
 
 extend<T> LinkedList<T> <: KtCollectionE<T> where T <: Equatable<T> {
@@ -1145,7 +1498,9 @@ extend<T> LinkedList<T> <: KtCollectionE<T> where T <: Equatable<T> {
         return lastIndexOf(this, item)
     }
 
-    // TODO: 
+    public func containsAll(items: Collection<T>): Bool {
+        return containsAll(ArrayList(this), items)
+    }
 
 }
 
@@ -1171,9 +1526,44 @@ extend<T> LinkedList<T> <: KtCollectionHE<T> where T <: Hashable & Equatable<T> 
         return LinkedList(HashSet(this))
     }
 
-    // TODO: 
+    public func associateWithTo<V>(dest: HashMap<T, V>, valueSelector: (T) -> V): HashMap<T, V> {
+        return associateWithTo(this, dest, valueSelector)
+    }
+
+    public func toHashSet(): HashSet<T> {
+        return HashSet(this)
+    }
 }
 
+extend<T> LinkedList<T> <: KtCollectionC<T> where T <: Comparable<T> {
+    public func binarySearch(element: T, fromIndex!: Int = 0, toIndex!: Int = size): Int {
+        return binarySearch(ArrayList(this), element, fromIndex: fromIndex, toIndex: toIndex)
+    }
+
+    public func max(): ?T {
+        return maxOrNone(this)
+    }
+
+    public func min(): ?T {
+        return minOrNone(this)
+    }
+
+    public func maxBy<R>(selector: (T) -> R): ?T where R <: Comparable<R> {
+        return maxByOrNone(this, selector)
+    }
+
+    public func maxOf<R>(selector: (T) -> R): R where R <: Comparable<R> {
+        return maxOf(this, selector)
+    }
+
+    public func minBy<R>(selector: (T) -> R): ?T where R <: Comparable<R> {
+        return minByOrNone(this, selector)
+    }
+
+    public func minOf<R>(selector: (T) -> R): R where R <: Comparable<R> {
+        return minOf(this, selector)
+    }
+}
 
 extend<T> HashSet<T> <: KtCollection<T> where T <: Hashable & Equatable<T> {
 
@@ -1498,9 +1888,163 @@ extend<T> HashSet<T> <: KtCollection<T> where T <: Hashable & Equatable<T> {
         return (first, second)
     }
 
-    // TODO:
+    public func filterTo(dest: HashSet<T>, predicate: (T) -> Bool): HashSet<T> {
+        for (element in this) {
+            if (predicate(element)) {
+                dest.put(element)
+            }
+        }
+        return dest
+    }
+
+    public func filterNotTo(dest: HashSet<T>, predicate: (T) -> Bool): HashSet<T> {
+        for (element in this) {
+            if (!predicate(element)) {
+                dest.put(element)
+            }
+        }
+        return dest
+    }
+
+    public func filterIndexedTo(dest: HashSet<T>, predicate: (Int, T) -> Bool): HashSet<T> {
+        var index = 0
+        for (element in this) {
+            if (predicate(index, element)) {
+                dest.put(element)
+            }
+            index++
+        }
+        return dest
+    }
+
+    public func filterNotIndexedTo(dest: HashSet<T>, predicate: (Int, T) -> Bool): HashSet<T> {
+        var index = 0
+        for (element in this) {
+            if (!predicate(index, element)) {
+                dest.put(element)
+            }
+            index++
+        }
+        return dest
+    }
+
+    public func associateByTo<K>(dest: HashMap<K, T>, keySelector: (T) -> K): HashMap<K, T> where K <: Hashable & Equatable<K> {
+        return associateByTo(this, dest, keySelector)
+    }
+
+    public func associateTo<K, V>(dest: HashMap<K, V>, transform: (T) -> (K, V)): HashMap<K, V> where K <: Hashable & Equatable<K> {
+        return associateTo(this, dest, transform)
+    }
+
+    public func flatMapTo<R>(dest: HashSet<R>, transform: (T) -> Collection<R>): HashSet<R> where R <: Hashable & Equatable<R> {
+        for (element in this) {
+            let list = transform(element)
+            dest.putAll(list)
+        }
+        return dest
+    }
+
+    public func flatMapIndexedTo<R>(dest: HashSet<R>, transform: (Int, T) -> Collection<R>): HashSet<R> where R <: Hashable & Equatable<R> {
+        var index = 0
+        for (element in this) {
+            let list = transform(index, element)
+            dest.putAll(list)
+            index++
+        }
+        return dest
+    }
+
+    public func groupByTo<K>(dest: HashMap<K, HashSet<T>>, keySelector: (T) -> K): HashMap<K, HashSet<T>> where K <: Hashable & Equatable<K> {
+        for (element in this) {
+            let key = keySelector(element)
+            let list = dest.getOrPut(key) { HashSet<T>() }
+            list.put(element)
+        }
+        return dest
+    }
+
+    public func mapTo<R>(dest: HashSet<R>, transform: (T) -> R): HashSet<R> where R <: Hashable & Equatable<R> {
+        for (item in this) {
+            dest.put(transform(item))
+        }
+        return dest
+    }
+
+    public func mapIndexedTo<R>(dest: HashSet<R>, transform: (Int, T) -> R): HashSet<R> where R <: Hashable & Equatable<R> {
+        var index = 0
+        for (item in this) {
+            dest.put(transform(index, item))
+            index++
+        }
+        return dest
+    }
+
+    public func foldRight<R>(initial: R, operation: (T, R) -> R): R {
+        return foldRight(ArrayList(this), initial, operation)
+    }
+
+    public func foldRightIndexed<R>(initial: R, operation: (Int, T, R) -> R): R {
+        return foldRightIndexed(ArrayList(this), initial, operation)
+    }
+
+    public func reduceRight(operation: (T, T) -> T): T {
+        return reduceRight(ArrayList(this), operation)
+    }
+
+    public func reduceRightIndexed(operation: (Int, T, T) -> T): T {
+        return reduceRightIndexed(ArrayList(this), operation)
+    }
+
+    public func joinTo(buf: StringBuilder, separator!: String = ", ", prefix!: String = "", postfix!: String = "", transform!: (T) -> String): StringBuilder {
+        return joinTo(this, buf, separator: separator, prefix: prefix, postfix: postfix, transform: transform)
+    }
+    
+    public func binarySearch(fromIndex!: Int = 0, toIndex!: Int = size, comparison!: (T) -> Int): Int {
+        return binarySearch(ArrayList(this), fromIndex: fromIndex, toIndex: toIndex, comparison: comparison)
+    }
+
+    public func binarySearchBy<K>(key: K, fromIndex!: Int = 0, toIndex!: Int = 0, selector!: (T) -> K): Int where K <: Comparable<K> {
+        return binarySearchBy(ArrayList(this), key, fromIndex: fromIndex, toIndex: toIndex, selector: selector)
+    }
+
+    public func associateWithTo<V>(dest: HashMap<T, V>, valueSelector: (T) -> V): HashMap<T, V> {
+        return associateWithTo(this, dest, valueSelector)
+    }
+
+    public func toArrayList(): ArrayList<T> {
+        return ArrayList(this)
+    }
 }
 
+extend<T> HashSet<T> <: KtCollectionC<T> where T <: Comparable<T> {
+    public func binarySearch(element: T, fromIndex!: Int = 0, toIndex!: Int = size): Int {
+        return binarySearch(ArrayList(this), element, fromIndex: fromIndex, toIndex: toIndex)
+    }
+
+    public func max(): ?T {
+        return maxOrNone(this)
+    }
+
+    public func min(): ?T {
+        return minOrNone(this)
+    }
+
+    public func maxBy<R>(selector: (T) -> R): ?T where R <: Comparable<R> {
+        return maxByOrNone(this, selector)
+    }
+
+    public func maxOf<R>(selector: (T) -> R): R where R <: Comparable<R> {
+        return maxOf(this, selector)
+    }
+
+    public func minBy<R>(selector: (T) -> R): ?T where R <: Comparable<R> {
+        return minByOrNone(this, selector)
+    }
+
+    public func minOf<R>(selector: (T) -> R): R where R <: Comparable<R> {
+        return minOf(this, selector)
+    }
+}
 
 extend<K, V> HashMap<K, V> <: KtMap<K, V> where K <: Hashable & Equatable<K> {
 
@@ -1592,8 +2136,45 @@ extend<K, V> HashMap<K, V> <: KtMap<K, V> where K <: Hashable & Equatable<K> {
         return onEachIndexed(this, action)
     }
 
-    // TODO:
-    
+    public func filterTo(dest: HashMap<K, V>, predicate: (K, V) -> Bool): HashMap<K, V> {
+        return filterTo(this, dest, predicate)
+    }
+
+    public func filterNotTo(dest: HashMap<K, V>, predicate: (K, V) -> Bool): HashMap<K, V> {
+        return filterNotTo(this, dest, predicate)
+    }
+
+    public func filterIndexedTo(dest: HashMap<K, V>, predicate: (Int, K, V) -> Bool): HashMap<K, V> {
+        return mapFilterIndexedTo(this, dest, predicate)
+    }
+
+    public func filterNotIndexedTo(dest: HashMap<K, V>, predicate: (Int, K, V) -> Bool): HashMap<K, V> {
+        return mapFilterNotIndexedTo(this, dest, predicate)
+    }
+
+    public func flatMapTo<R>(dest: ArrayList<R>, transform: (K, V) -> Collection<R>): ArrayList<R> {
+        return flatMapTo(this, dest, transform)
+    }
+
+    public func mapTo<R>(dest: ArrayList<R>, transform: (K, V) -> R): ArrayList<R> {
+        return mapTo(this, dest, transform)
+    }
+
+    public func mapKeysTo<R>(dest: HashMap<R, V>, transform: (K) -> R): HashMap<R, V> where R <: Hashable & Equatable<R> {
+        return mapKeysTo(this, dest, transform)
+    }
+
+    public func mapValuesTo<R>(dest: HashMap<K, R>, transform: (V) -> R): HashMap<K, R> {
+        return mapValuesTo(this, dest, transform)
+    }
+
+    public func toArrayList(): ArrayList<(K, V)> {
+        let list = ArrayList<(K, V)>()
+        for ((k, v) in this) {
+            list.append((k, v))
+        }
+        return list
+    }
 }
 
 
@@ -1728,8 +2309,92 @@ extend<K, V> TreeMap<K, V> <: KtMap<K, V> where K <: Hashable & Equatable<K> {
         return this
     }
 
-    // TODO:
+    public func toHashMap() {
+        var result = HashMap<K, V>()
+        for ((k, v) in this) {
+            result[k] = v
+        }
+        return result
+    }
 
+    public func filterTo(dest: TreeMap<K, V>, predicate: (K, V) -> Bool): TreeMap<K, V> {
+        for ((k, v) in this) {
+            if (predicate(k, v)) {
+                dest[k] = v
+            }
+        }
+        return dest
+    }
+
+    public func filterNotTo(dest: TreeMap<K, V>, predicate: (K, V) -> Bool): TreeMap<K, V> {
+        for ((k, v) in this) {
+            if (!predicate(k, v)) {
+                dest[k] = v
+            }
+        }
+        return dest
+    }
+
+    public func filterIndexedTo(dest: TreeMap<K, V>, predicate: (Int, K, V) -> Bool): TreeMap<K, V> {
+        var index = 0
+        for ((k, v) in this) {
+            if (predicate(index, k, v)) {
+                dest[k] = v
+            }
+            index++
+        }
+        return dest
+    }
+
+    public func filterNotIndexedTo(dest: TreeMap<K, V>, predicate: (Int, K, V) -> Bool): TreeMap<K, V> {
+        var index = 0
+        for ((k, v) in this) {
+            if (!predicate(index, k, v)) {
+                dest[k] = v
+            }
+            index++
+        }
+        return dest
+    }
+
+    public func flatMapTo<R>(dest: ArrayList<R>, transform: (K, V) -> Collection<R>): ArrayList<R> {
+        for ((k, v) in this) {
+            let list = transform(k, v)
+            dest.appendAll(list)
+        }
+        return dest
+    }
+
+    public func mapTo<R>(dest: ArrayList<R>, transform: (K, V) -> R): ArrayList<R> {
+        for ((k, v) in this) {
+            dest.append(transform(k, v))
+        }
+        return dest
+    }
+
+    public func mapKeysTo<R>(dest: HashMap<R, V>, transform: (K) -> R): HashMap<R, V> where R <: Hashable & Equatable<R> {
+        for ((k, v) in this) {
+            let key = transform(k)
+            dest[key] = v
+        }
+        return dest
+    }
+
+    public func mapValuesTo<R>(dest: HashMap<K, R>, transform: (V) -> R): HashMap<K, R> {
+        for ((k, v) in this) {
+            let value = transform(v)
+            dest[k] = value
+        }
+        return dest
+    }
+
+    public func toArrayList(): ArrayList<(K, V)> {
+        let list = ArrayList<(K, V)>()
+        for ((k, v) in this) {
+            list.append((k, v))
+        }
+        return list
+    }
 }
 
 extend<K, V> ConcurrentHashMap<K, V> <: KtMap<K, V> where K <: Hashable & Equatable<K> {
@@ -1871,8 +2536,89 @@ extend<K, V> ConcurrentHashMap<K, V> <: KtMap<K, V> where K <: Hashable & Equata
         return this
     }
 
-    // TODO：
-    
+    public func toHashMap() {
+        return HashMap(this)
+    }
+
+    public func filterTo(dest: ConcurrentHashMap<K, V>, predicate: (K, V) -> Bool): ConcurrentHashMap<K, V> {
+        for ((k, v) in this) {
+            if (predicate(k, v)) {
+                dest[k] = v
+            }
+        }
+        return dest
+    }
+
+    public func filterNotTo(dest: ConcurrentHashMap<K, V>, predicate: (K, V) -> Bool): ConcurrentHashMap<K, V> {
+        for ((k, v) in this) {
+            if (!predicate(k, v)) {
+                dest[k] = v
+            }
+        }
+        return dest
+    }
+
+    public func filterIndexedTo(dest: ConcurrentHashMap<K, V>, predicate: (Int, K, V) -> Bool): ConcurrentHashMap<K, V> {
+        var index = 0
+        for ((k, v) in this) {
+            if (predicate(index, k, v)) {
+                dest[k] = v
+            }
+            index++
+        }
+        return dest
+    }
+
+    public func filterNotIndexedTo(dest: ConcurrentHashMap<K, V>, predicate: (Int, K, V) -> Bool): ConcurrentHashMap<K, V> {
+        var index = 0
+        for ((k, v) in this) {
+            if (!predicate(index, k, v)) {
+                dest[k] = v
+            }
+            index++
+        }
+        return dest
+    }
+
+    public func flatMapTo<R>(dest: ArrayList<R>, transform: (K, V) -> Collection<R>): ArrayList<R> {
+        for ((k, v) in this) {
+            let list = transform(k, v)
+            dest.appendAll(list)
+        }
+        return dest
+    }
+
+    public func mapTo<R>(dest: ArrayList<R>, transform: (K, V) -> R): ArrayList<R> {
+        for ((k, v) in this) {
+            dest.append(transform(k, v))
+        }
+        return dest
+    }
+
+    public func mapKeysTo<R>(dest: HashMap<R, V>, transform: (K) -> R): HashMap<R, V> where R <: Hashable & Equatable<R> {
+        for ((k, v) in this) {
+            let key = transform(k)
+            dest[key] = v
+        }
+        return dest
+    }
+
+    public func mapValuesTo<R>(dest: HashMap<K, R>, transform: (V) -> R): HashMap<K, R> {
+        for ((k, v) in this) {
+            let value = transform(v)
+            dest[k] = value
+        }
+        return dest
+    }
+
+    public func toArrayList(): ArrayList<(K, V)> {
+        let list = ArrayList<(K, V)>()
+        for ((k, v) in this) {
+            list.append((k, v))
+        }
+        return list
+    }
+
 }
 
 func joinToString<T>(col: Collection<T>, separator!: String = ", ", prefix!: String = "", postfix!: String = "", transform!: (T) -> String): String {
@@ -1880,7 +2626,7 @@ func joinToString<T>(col: Collection<T>, separator!: String = ", ", prefix!: Str
     for (item in col) {
         s += (transform(item) + separator)
     }
-    s = s.trimRight(separator)
+    s = s.trimEnd(separator)
     return "${prefix}${s}${postfix}"
 }
 
@@ -2210,14 +2956,14 @@ func groupBy<T, K>(col: Collection<T>, keySelector: (T) -> K): HashMap<K, ArrayL
 }
 
 func intersect<T>(col: Collection<T>, other: Collection<T>): HashSet<T> where T <: Hashable & Equatable<T> {
-    let mainArr = Array(col)
-    let otherArr = Array(other)
+    let mainArr = ArrayList(col)
+    let otherArr = ArrayList(other)
     return HashSet(mainArr.filter { it => otherArr.contains(it) })
 }
 
 func subtract<T>(col: Collection<T>, other: Collection<T>): HashSet<T> where T <: Hashable & Equatable<T> {
     let mainArr = ArrayList(col)
-    let otherArr = Array(other)
+    let otherArr = ArrayList(other)
     mainArr.removeIf { it => otherArr.contains(it)}
     return HashSet(mainArr)
 }
@@ -2491,4 +3237,562 @@ public func onEachIndexed<K, V>(m: Map<K, V>, action: (Int, K, V) -> Unit): Hash
         index++
     }
     return HashMap(m)
+}
+
+public func filterTo<T>(col: Collection<T>, dest: ArrayList<T>, predicate: (T) -> Bool): ArrayList<T> {
+    for (element in col) {
+        if (predicate(element)) {
+            dest.append(element)
+        }
+    }
+    return dest
+}
+
+public func filterNotTo<T>(col: Collection<T>, dest: ArrayList<T>, predicate: (T) -> Bool): ArrayList<T> {
+    for (element in col) {
+        if (!predicate(element)) {
+            dest.append(element)
+        }
+    }
+    return dest
+}
+
+public func filterIndexedTo<T>(col: Collection<T>, dest: ArrayList<T>, predicate: (Int, T) -> Bool): ArrayList<T> {
+    var index = 0
+    for (element in col) {
+        if (predicate(index, element)) {
+            dest.append(element)
+        }
+        index++
+    }
+    return dest
+}
+
+public func filterNotIndexedTo<T>(col: Collection<T>, dest: ArrayList<T>, predicate: (Int, T) -> Bool): ArrayList<T> {
+    var index = 0
+    for (element in col) {
+        if (!predicate(index, element)) {
+            dest.append(element)
+        }
+        index++
+    }
+    return dest
+}
+
+public func reversed<T>(col: Collection<T>): ArrayList<T> {
+    let list = ArrayList(col)
+    list.reverse()
+    return list
+}
+
+public func associateByTo<T, K>(col: Collection<T>, dest: HashMap<K, T>, keySelector: (T) -> K): HashMap<K, T> where K <: Hashable & Equatable<K> {
+    for (element in col) {
+        dest.put(keySelector(element), element)
+    }
+    return dest
+}
+
+public func associateTo<T, K, V>(col: Collection<T>, dest: HashMap<K, V>, transform: (T) -> (K, V)): HashMap<K, V> where K <: Hashable & Equatable<K> {
+    for (element in col) {
+        let item = transform(element)
+        dest.put(item[0], item[1])
+    }
+    return dest
+}
+
+public func associateWithTo<K, V>(col: Collection<K>, dest: HashMap<K, V>, valueSelector: (K) -> V): HashMap<K, V> where K <: Hashable & Equatable<K> {
+    for (element in col) {
+        dest.put(element, valueSelector(element))
+    }
+    return dest
+}
+
+public func flatMapTo<T, R>(col: Collection<T>, dest: ArrayList<R>, transform: (T) -> Collection<R>): ArrayList<R> {
+    for (element in col) {
+        let list = transform(element)
+        dest.appendAll(list)
+    }
+    return dest
+}
+
+public func flatMapIndexedTo<T, R>(col: Collection<T>, dest: ArrayList<R>, transform: (Int, T) -> Collection<R>): ArrayList<R> {
+    var index = 0
+    for (element in col) {
+        let list = transform(index, element)
+        dest.appendAll(list)
+        index++
+    }
+    return dest
+}
+
+public func groupByTo<T, K>(col: Collection<T>, dest: HashMap<K, ArrayList<T>>, keySelector: (T) -> K): HashMap<K, ArrayList<T>> where K <: Hashable & Equatable<K> {
+    for (element in col) {
+        let key = keySelector(element)
+        let list = dest.getOrPut(key) { ArrayList<T>() }
+        list.append(element)
+    }
+    return dest
+}
+
+public func mapTo<T, R>(col: Collection<T>, dest: ArrayList<R>, transform: (T) -> R): ArrayList<R> {
+    for (item in col) {
+        dest.append(transform(item))
+    }
+    return dest
+}
+
+public func mapIndexedTo<T, R>(col: Collection<T>, dest: ArrayList<R>, transform: (Int, T) -> R): ArrayList<R> {
+    var index = 0
+    for (item in col) {
+        dest.append(transform(index, item))
+        index++
+    }
+    return dest
+}
+
+public func foldRight<T, R>(col: ArrayList<T>, initial: R, operation: (T, R) -> R): R {
+    var accumulator = initial
+    if (!col.isEmpty()) {
+        for (i in (col.lastIndex - 1)..=0:-1) {
+            accumulator = operation(col[i], accumulator)   
+        }
+    }
+    return accumulator
+}
+
+public func foldRightIndexed<T, R>(col: ArrayList<T>, initial: R, operation: (Int, T, R) -> R): R {
+    var accumulator = initial
+    if (!col.isEmpty()) {
+        for (i in (col.lastIndex - 1)..=0:-1) {
+            accumulator = operation(i, col[i], accumulator)   
+        }
+    }
+    return accumulator
+}
+
+public func reduceRight<T>(col: ArrayList<T>, operation: (T, T) -> T): T {
+    if (col.isEmpty()) {
+        throw UnsupportedException("Empty list can't be reduced.")
+    }
+    var accumulator = col.last()
+    for (i in (col.lastIndex - 2)..=0:-1) {
+        accumulator = operation(col[i], accumulator)   
+    }
+    return accumulator
+}
+
+public func reduceRightIndexed<T>(col: ArrayList<T>, operation: (Int, T, T) -> T): T {
+    if (col.isEmpty()) {
+        throw UnsupportedException("Empty list can't be reduced.")
+    }
+    var accumulator = col.last()
+    for (i in (col.lastIndex - 2)..=0:-1) {
+        accumulator = operation(i, col[i], accumulator)   
+    }
+    return accumulator
+}
+
+public func joinTo<T>(col: Collection<T>, buf: StringBuilder, separator!: String = ", ", prefix!: String = "", postfix!: String = "", transform!: (T) -> String): StringBuilder {
+    buf.append(prefix)
+    var index = 0
+    for (element in col) {
+        if (index > 0) {
+            buf.append(separator)
+        }
+        buf.append(transform(element))
+        index++
+    }
+    buf.append(postfix)
+    return buf
+}
+
+public func containsAll<T>(col: ArrayList<T>, items: Collection<T>): Bool where T <: Equatable<T> {
+    for (i in items) {
+        if (!col.contains(i)) {
+            return false
+        }
+    }
+    return true
+}
+
+public func compareValues<T>(a: T, b: T): Int where T <: Comparable<T> {
+    if (a == b) {
+        return 0
+    }
+    if (a > b) {
+        return 1
+    }
+    if (a < b) {
+        return -1
+    }
+    return 0
+}
+
+public func binarySearch<T>(col: ArrayList<T>, element: T, fromIndex!: Int = 0, toIndex!: Int = col.size): Int where T <: Comparable<T> {
+    var low = fromIndex
+    var high = toIndex - 1
+    while(low <= high) {
+        let mid = (low + high) >> 1 // safe from overflows
+        let midVal = col[mid]
+        let cmp = compareValues(midVal, element)
+        if (cmp < 0) {
+            low = mid + 1
+        } else if (cmp > 0) {
+            high = mid - 1
+        } else {
+            return mid  // key found
+        }
+    }
+    return -(low + 1)   // key not found
+}
+
+public func binarySearch<T>(col: ArrayList<T>, fromIndex!: Int = 0, toIndex!: Int = col.size, comparison!: (T) -> Int): Int {
+    var low = fromIndex
+    var high = toIndex - 1
+    while(low <= high) {
+        let mid = (low + high) >> 1 // safe from overflows
+        let midVal = col[mid]
+        let cmp = comparison(midVal)
+        if (cmp < 0) {
+            low = mid + 1
+        } else if (cmp > 0) {
+            high = mid - 1
+        } else {
+            return mid // key found
+        }
+    }
+    return -(low + 1)  // key not found
+}
+
+public func binarySearchBy<T, K>(col: ArrayList<T>, key: K, fromIndex!: Int = 0, toIndex!: Int = 0, selector!: (T) -> K): Int where K <: Comparable<K> {
+    return binarySearch(col, fromIndex: fromIndex, toIndex: toIndex) { it =>
+        compareValues(selector(it), key)
+    }
+}
+
+public func filterTo<K, V>(m: HashMap<K, V>, dest: HashMap<K, V>, predicate: (K, V) -> Bool): HashMap<K, V> where K <: Hashable & Equatable<K> {
+    for ((k, v) in m) {
+        if (predicate(k, v)) {
+            dest[k] = v
+        }
+    }
+    return dest
+}
+
+public func filterNotTo<K, V>(m: HashMap<K, V>, dest: HashMap<K, V>, predicate: (K, V) -> Bool): HashMap<K, V> where K <: Hashable & Equatable<K> {
+    for ((k, v) in m) {
+        if (!predicate(k, v)) {
+            dest[k] = v
+        }
+    }
+    return dest
+}
+
+public func mapFilterIndexedTo<K, V>(m: HashMap<K, V>, dest: HashMap<K, V>, predicate: (Int, K, V) -> Bool): HashMap<K, V> where K <: Hashable & Equatable<K> {
+    var index = 0
+    for ((k, v) in m) {
+        if (predicate(index, k, v)) {
+            dest[k] = v
+        }
+        index++
+    }
+    return dest
+}
+
+public func mapFilterNotIndexedTo<K, V>(m: HashMap<K, V>, dest: HashMap<K, V>, predicate: (Int, K, V) -> Bool): HashMap<K, V> where K <: Hashable & Equatable<K> {
+    var index = 0
+    for ((k, v) in m) {
+        if (!predicate(index, k, v)) {
+            dest[k] = v
+        }
+        index++
+    }
+    return dest
+}
+
+public func flatMapTo<K, V, R>(m: HashMap<K, V>, dest: ArrayList<R>, transform: (K, V) -> Collection<R>): ArrayList<R> where K <: Hashable & Equatable<K> {
+    for ((k, v) in m) {
+        let list = transform(k, v)
+        dest.appendAll(list)
+    }
+    return dest
+}
+
+public func mapTo<K, V, R>(m: HashMap<K, V>, dest: ArrayList<R>, transform: (K, V) -> R): ArrayList<R> where K <: Hashable & Equatable<K> {
+    for ((k, v) in m) {
+        dest.append(transform(k, v))
+    }
+    return dest
+}
+
+public func mapKeysTo<K, V, R>(m: HashMap<K, V>, dest: HashMap<R, V>, transform: (K) -> R): HashMap<R, V> where K <: Hashable & Equatable<K>, R <: Hashable & Equatable<R> {
+    for ((k, v) in m) {
+        let key = transform(k)
+        dest[key] = v
+    }
+    return dest
+}
+
+public func mapValuesTo<K, V, R>(m: HashMap<K, V>, dest: HashMap<K, R>, transform: (V) -> R): HashMap<K, R> where K <: Hashable & Equatable<K> {
+    for ((k, v) in m) {
+        let value = transform(v)
+        dest[k] = value
+    }
+    return dest
+}
+
+public func maxOrNone<T>(col: Collection<T>): ?T where T <: Comparable<T> {
+    if (col.isEmpty()) {
+        return None
+    }
+    let iter = col.iterator()
+    var m = iter.next().getOrThrow()
+    while (let Some(o) <- iter.next()) {
+        if (m < o) {
+            m = o
+        }
+    }
+    return m
+}
+
+public func minOrNone<T>(col: Collection<T>): ?T where T <: Comparable<T> {
+    if (col.isEmpty()) {
+        return None
+    }
+    let iter = col.iterator()
+    var m = iter.next().getOrThrow()
+    while (let Some(o) <- iter.next()) {
+        if (m > o) {
+            m = o
+        }
+    }
+    return m
+}
+
+public func maxByOrNone<T, R>(col: Collection<T>, selector: (T) -> R): ?T where R <: Comparable<R> {
+    if (col.isEmpty()) {
+        return None
+    }
+    let iter = col.iterator()
+    var me = iter.next().getOrThrow()
+    if (col.size == 1) {
+        return me
+    }
+    var mv = selector(me)
+    while (let Some(e) <- iter.next()) {
+        let v = selector(e)
+        if (mv < v) {
+            me = e
+            mv = v
+        }
+    }
+    return me
+}
+
+public func minByOrNone<T, R>(col: Collection<T>, selector: (T) -> R): ?T where R <: Comparable<R> {
+    if (col.isEmpty()) {
+        return None
+    }
+    let iter = col.iterator()
+    var me = iter.next().getOrThrow()
+    if (col.size == 1) {
+        return me
+    }
+    var mv = selector(me)
+    while (let Some(e) <- iter.next()) {
+        let v = selector(e)
+        if (mv > v) {
+            me = e
+            mv = v
+        }
+    }
+    return me
+}
+
+public func maxOf<T, R>(col: Collection<T>, selector: (T) -> R): R where R<: Comparable<R> {
+    if (col.isEmpty()) {
+        throw IndexOutOfBoundsException()
+    }
+    let iter = col.iterator()
+    var mv = selector(iter.next().getOrThrow())
+    while (let Some(e) <- iter.next()) {
+        let v = selector(e)
+        if (mv < v) {
+            mv = v
+        }
+    }
+    return mv
+}
+
+public func minOf<T, R>(col: Collection<T>, selector: (T) -> R): R where R<: Comparable<R> {
+    if (col.isEmpty()) {
+        throw IndexOutOfBoundsException()
+    }
+    let iter = col.iterator()
+    var mv = selector(iter.next().getOrThrow())
+    while (let Some(e) <- iter.next()) {
+        let v = selector(e)
+        if (mv > v) {
+            mv = v
+        }
+    }
+    return mv
+}
+
+extend Array<String> {
+
+    func mapIndexedNotNone(transform: (Int, String) -> ?String): Array<String> {
+        let arr = ArrayList<String>()
+        var index = 0
+        for (e in this) {
+            let item = transform(index, e)
+            if (item != None) {
+                arr.append(item.getOrThrow())
+            }
+            index++
+        }
+        return arr.toArray()
+    }
+
+    func reindent(indentAddFunction: (String) -> String, indentCutFunction: (String) -> ?String): String {
+        let li = this.size - 1
+        return this.mapIndexedNotNone { i, v =>
+            if ((i == 0 || i == li) && v.isAsciiBlank()) {
+                None
+            } else {
+                var cv = indentCutFunction(v)
+                if (cv != None) {
+                    cv = indentAddFunction(cv.getOrThrow())
+                }
+                if (cv == None) {
+                    cv = v
+                }
+                cv
+            }
+        }.joinToString(separator: "\n") { it => it }
+    }
+}
+
+extend<T> Array<T> where T <: Comparable<T> {
+
+    func minOrNone(): ?T {
+        if (this.isEmpty()) {
+            return None
+        }
+        let iter = this.iterator()
+        var min = iter.next().getOrThrow()
+
+        while (let Some(o) <- iter.next()) {
+            if (min > o) {
+                min = o
+            }
+        }
+        return min
+    }
+}
+
+extend<K, V> Array<(K, V)> where K <: Hashable & Equatable<K>, V <: Hashable & Equatable<V> {
+    public func toMap(): HashMap<K, V> {
+        let m = HashMap<K, V>()
+        for ((k, v) in this) {
+            m[k] = v
+        }
+        return m
+    }
+}
+
+extend<K, V> ArrayList<(K, V)> where K <: Hashable & Equatable<K>, V <: Hashable & Equatable<V> {
+    public func toMap(): HashMap<K, V> {
+        let m = HashMap<K, V>()
+        for ((k, v) in this) {
+            m[k] = v
+        }
+        return m
+    }
+}
+
+extend<K, V> LinkedList<(K, V)> where K <: Hashable & Equatable<K>, V <: Hashable & Equatable<V> {
+    public func toMap(): HashMap<K, V> {
+        let m = HashMap<K, V>()
+        for ((k, v) in this) {
+            m[k] = v
+        }
+        return m
+    }
+}
+
+extend Array<Int> {
+
+    public func sumOf(selector: (Int) -> Int): Int {
+        return sumOf(this, selector)
+    }
+}
+
+extend ArrayList<Int> {
+
+    public func sumOf(selector: (Int) -> Int): Int {
+        return sumOf(this, selector)
+    }
+}
+
+extend Array<Float64> {
+    
+    public func sum(): Float64 {
+        return sum(this)
+    }
+
+    public func average(): Float64 {
+        return average(this)
+    }
+
+    public func sumOf(selector: (Float64) -> Float64): Float64 {
+        return sumOf(this, selector)
+    }
+}
+
+extend ArrayList<Float64> {
+    public func sum(): Float64 {
+        return sum(this)
+    }
+
+    public func average(): Float64 {
+        return average(this)
+    }
+
+    public func sumOf(selector: (Float64) -> Float64): Float64 {
+        return sumOf(this, selector)
+    }
+}
+
+public func sum(col: Collection<Float64>): Float64 {
+    var sum = 0.0
+    for (e in col) {
+        sum += e
+    }
+    return sum
+}
+
+public func sumOf(col: Collection<Int>, selector: (Int) -> Int): Int {
+    var sum = 0
+    for (e in col) {
+        sum += selector(e)
+    }
+    return sum
+}
+
+public func sumOf(col: Collection<Float64>, selector: (Float64) -> Float64): Float64 {
+    var sum = 0.0
+    for (e in col) {
+        sum += selector(e)
+    }
+    return sum
+}
+
+public func average(col: Collection<Float64>): Float64 {
+    var sum = 0.0
+    var count = col.size
+    for (e in col) {
+        sum += e
+    }
+    return sum / count.toFloat()
 }
