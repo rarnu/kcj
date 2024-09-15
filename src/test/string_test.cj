@@ -1,8 +1,8 @@
-package test
+package kcj.test
 
-from std import unittest.*
-from std import unittest.testmacro.*
-from kcj import extension.KtString
+import std.unittest.*
+import std.unittest.testmacro.*
+import kcj.extension.KtString
 
 @Test
 class TestStringExtension {
@@ -11,7 +11,6 @@ class TestStringExtension {
 
     @TestCase
     func testSubstring() {
-
         @Assert(str.substring(2, 4), "cd")
         // @Assert(condition: Bool)
     }
@@ -20,5 +19,11 @@ class TestStringExtension {
     func testDateTime() {
         let str = "2024-06-30 14:00:15"
         println(str.toDateTime())
+    }
+
+    @TestCase
+    func testReverse() {
+        let str = "abcdefg"
+        @Assert(str.reversed(), "gfedcba")
     }
 }

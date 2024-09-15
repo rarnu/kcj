@@ -6,6 +6,25 @@ import kcj.common.*
 
 import std.convert.Parsable
 
+
+public interface Addable<T> {
+    operator func +(right: T): T
+}
+
+func fun<T>(x:T, y: T): T where T <: Addable<T> {
+    return x + y
+}
+
+extend Int64 <: Addable<Int64> {
+
+}
+
+func test0() {
+    let b = fun(1, 2)
+    println(b)
+}
+
+
 public class MyData <: ToString & Equatable<MyData> {
     public MyData(var cardType: String, var cardSubType: String, var cardName: String) {
 
@@ -38,8 +57,30 @@ let cards = [
     MyData("Trap", "Normal", "毒蛇の牙")
     ]
 
+
+public func sample<T>(a: T, b: T): T where T <: KNumber<T> {
+    return a + b
+}
+
+public func call() {
+    println(sample<Int>(1, 2))  
+}
+
 main(): Int64 {
+
+    var a: Int64 = 1
+    var b: Int32 = 2
+    var c: Float32 = 1.0
+    var d = a + b + c
+    println("d = ${d}")
+
+    let x = "a" + 1
+    println(x)
+    let y = 1 + "a"
+    println(y)
     
+
+
     let list = cards.filter { it =>
         it.cardType == "Monster"
     }.groupBy { it =>
@@ -47,7 +88,6 @@ main(): Int64 {
     } 
     println(list)
     
-
     let s = """
         |aaa
         |bbbb
@@ -59,6 +99,7 @@ main(): Int64 {
     """.trimMargin()
 
     println(s)
+    
 
     return 0
 }

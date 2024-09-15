@@ -497,3 +497,57 @@ extend String <: KtString {
     }
 }
 
+
+public interface KStringOperators {
+    operator func +(right: Int64): String
+    operator func +(right: Int32): String
+    operator func +(right: Int16): String
+    operator func +(right: Int8): String
+    operator func +(right: UInt64): String
+    operator func +(right: UInt32): String
+    operator func +(right: UInt16): String
+    operator func +(right: UInt8): String
+    operator func +(right: Float64): String
+    operator func +(right: Float32): String
+    operator func +(right: Float16): String
+    operator func +(right: ToString): String
+}
+
+extend String <: KStringOperators {
+    public operator func +(right: Int64): String {
+        return "${this}${right}"
+    }
+    public operator func +(right: Int32): String {
+        return "${this}${right}"
+    }
+    public operator func +(right: Int16): String {
+        return "${this}${right}"
+    }
+    public operator func +(right: Int8): String {
+        return "${this}${right}"
+    }
+    public operator func +(right: UInt64): String {
+        return "${this}${right}"
+    }
+    public operator func +(right: UInt32): String {
+        return "${this}${right}"
+    }
+    public operator func +(right: UInt16): String {
+        return "${this}${right}"
+    }
+    public operator func +(right: UInt8): String {
+        return "${this}${right}"
+    }
+    public operator func +(right: Float64): String {
+        return "${this}${right}"
+    }
+    public operator func +(right: Float32): String {
+        return "${this}${right}"
+    }
+    public operator func +(right: Float16): String {
+        return "${this}${right}"
+    }
+    public operator func +(right: ToString): String {
+        return "${this}${right}"
+    }
+}
